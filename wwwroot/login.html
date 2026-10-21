@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Giriş · Sunucu Durum Paneli</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Sunucular">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f1419">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { display: grid; place-items: center; min-height: 100vh; padding: 16px; }
+
+    .login-card {
+      width: min(380px, 100%);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 26px 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      animation: modalIn 0.35s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+    }
+
+    .login-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .login-brand h1 { font-size: 18px; margin: 0; }
+    .login-sub { color: var(--text-muted); font-size: 13px; margin: 0 0 22px; }
+
+    .login-card .field { margin-bottom: 14px; }
+    /* 16px altindaki yazi boyutunda iPhone odaklaninca sayfayi yakinlastirir */
+    .login-card input { font-size: 16px; padding: 10px 12px; }
+    body { padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+    .login-card button[type="submit"] { width: 100%; padding: 10px; font-size: 14px; margin-top: 6px; }
+    .login-card .form-error { margin-bottom: 14px; }
+  </style>
+</head>
+<body class="loaded">
+  <form class="login-card" id="loginForm" autocomplete="on">
+    <div class="login-brand">
+      <span class="brand-dot state-Up"></span>
+      <h1>Sunucu Durum Paneli</h1>
+    </div>
+    <p class="login-sub">Devam etmek için giriş yapın.</p>
+
+    <p class="form-error" id="loginError" hidden></p>
+
+    <label class="field">
+      <span>Kullanıcı adı</span>
+      <input id="username" type="text" autocomplete="username" required autofocus>
+    </label>
+
+    <label class="field">
+      <span>Parola</span>
+      <input id="password" type="password" autocomplete="current-password" required>
+    </label>
+
+    <button type="submit" id="loginBtn">Giriş yap</button>
+  </form>
+
+  <script>
+    "use strict";
+
+    const form = document.getElementById("loginForm");
+    const error = document.getElementById("loginError");
+    const button = document.getElementById("loginBtn");
+
+    // Tema tercihini ana panelle paylas.
+    try {
+      const theme = localStorage.getItem("serverMonitorTheme");
+      if (theme === "light" || theme === "dark") document.documentElement.setAttribute("data-theme", theme);
+    } catch { /* yok say */ }
+
+    // Giris kapaliysa ya da zaten oturum aciksa dogrudan panele git.
+    fetch("/api/auth/state", { cache: "no-store" })
+      .then(r => r.json())
+      .then(s => { if (!s.enabled || s.authenticated) location.replace("/"); })
+      .catch(() => { /* sunucuya ulasilamiyorsa formda kal */ });
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      error.hidden = true;
+      button.disabled = true;
+      button.classList.add("busy");
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+          })
+        });
+
+        if (res.ok) {
+          location.replace("/");
+          return;
+        }
+
+        const body = await res.json().catch(() => ({}));
+        error.textContent = body.message || "Giriş başarısız.";
+        error.hidden = false;
+        document.getElementById("password").select();
+      } catch (err) {
+        error.textContent = "Sunucuya ulaşılamadı: " + err.message;
+        error.hidden = false;
+      } finally {
+        button.disabled = false;
+        button.classList.remove("busy");
+      }
+    });
+  </script>
+</body>
+</html>

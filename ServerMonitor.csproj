@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ServerMonitor</RootNamespace>
+    <UserSecretsId>server-monitor-a1b2c3d4</UserSecretsId>
+    <!--
+      CA1416: System.Management yalnizca Windows'ta calisir. WindowsMetricsProbe
+      cagrilari OperatingSystem.IsWindows() ile korunuyor, bu yuzden uyari kapatildi.
+    -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WMI/CIM erisimi icin (yalnizca Windows'ta calisir) -->
+    <PackageReference Include="System.Management" Version="9.0.0" />
+    <!-- WMI parolalarini servers.json icinde sifreli tutmak icin (Windows DPAPI) -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.0" />
+    <!-- Olcum gecmisinin diske yazilmasi -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+    <!-- Windows servisi olarak calisabilmek icin -->
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Publish'e dahil edilmez: servis guncellenirken kurulu makinedeki sunucu listesinin
+      uzerine yazilmasin. Ilk kurulumda servis-kur.bat kopyalar.
+    -->
+    <None Update="servers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

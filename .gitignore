@@ -1,0 +1,9 @@
+bin/
+obj/
+.vs/
+*.user
+*.zip
+keys/
+history.db
+history.db-shm
+history.db-wal

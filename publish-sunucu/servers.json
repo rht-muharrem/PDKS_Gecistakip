@@ -1,0 +1,687 @@
+{
+  "Monitor": {
+    "IntervalSeconds": 60,
+    "DefaultTimeoutMs": 5000,
+    "HistorySize": 240,
+    "HistoryRetentionDays": 30,
+    "Notifications": {
+      "Enabled": true,
+      "FailureThreshold": 1,
+      "NotifyOnRecovery": true,
+      "NotifyComputers": false,
+      "Email": {
+        "Enabled": false,
+        "Host": "smtp.office365.com",
+        "Port": 587,
+        "UseSsl": true,
+        "Username": "bim@genmot.com.tr",
+        "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABSht7rN65RItOM4c7OSBhMU9DFQHrArdKQKFkm7vR5BgAAAAAOgAAAAAIAACAAAAD7c/R0xPK01w\u002Bu9hPI\u002BtmJ\u002BuNRP4njbFMtPnqwfyDr8SAAAADxtyjJeo2tIYkHEzncWm/5K8a0uBn04rMwa00q4vexSEAAAAD/kdU4Ad\u002BdqVJl3ol2KjzsHeQwg4KLHDza8sMBQ/XB76pjwF1836lxM8syk7Hu8gls1czwtJFcvnyf7ihcU\u002BMS",
+        "From": "bim@genmot.com.tr",
+        "To": [
+          "bim@genmot.com.tr"
+        ]
+      },
+      "Webhook": {
+        "Enabled": false,
+        "Url": ""
+      },
+      "ChangeAlerts": {
+        "Enabled": false,
+        "IntervalMinutes": 60,
+        "WatchAntivirus": true,
+        "WatchNewSoftware": true,
+        "WatchUsb": true
+      }
+    },
+    "Auth": {
+      "Enabled": true,
+      "Username": "admin",
+      "PasswordHash": "iUnSjaMkr3AzMMS/YxfDqSx8je9KSzizJtq4r9HQPPY=",
+      "PasswordSalt": "4dU/G2CXNxTut/WzA7fT3A=="
+    },
+    "Dns": {
+      "IngestKey": "5d9ef6299245b62165d5d3b9f465bd9ad1cfed3a43c0136f",
+      "RetentionMinutes": 1440,
+      "IgnoredDomains": [
+        "adobe.com",
+        "adobe.io",
+        "bravesoftware.com",
+        "nvidia.com",
+        "static.microsoft",
+        "pki.goog",
+        "scdn.co",
+        "lencr.org",
+        "spotifycdn.com",
+        "azureedge.us",
+        "usercontent.goog",
+        "typekit.net",
+        "omtrdc.net",
+        "licdn.com",
+        "azurefd.net",
+        "cloud.microsoft",
+        "gemius.pl",
+        "px-cloud.net",
+        "anydesk.com",
+        "anthropic.com",
+        "claude.ai"
+      ],
+      "AllowedDomains": []
+    },
+    "Servers": [
+      {
+        "Id": "bu-makine",
+        "Name": "Muharrem RAHAT",
+        "Host": "192.168.2.140",
+        "Group": "Yerel / BILGI ISLEM",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 100
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAANtcOD0yX6THo6fntLKNOO9TffQYRyQsdn3wqvShnqogAAAAAOgAAAAAIAACAAAAAdwfl\u002BcXGzhulWglwHXxOAOoaQZRHmf8KIRXkPSBgH8hAAAABtAfkUU\u002BTQ8kelE1DCn689QAAAAMOZ1yVRaZd5/XGLp/eWwjdB9kr8EoO0g3cSZdPRxKOfD\u002BoDOO6v1e5INQ3JiEmRsbvGtob54upLtn9nL3NBZdg=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "ac",
+        "Name": "AC",
+        "Host": "genforest.gen.local",
+        "Group": "Yerel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 0
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABNyTJnqdW8EgU\u002BhNQ4tVT2UPOn9VCHUu/gtQsoZDoH3QAAAAAOgAAAAAIAACAAAACVUvUZ8d5MllkxF1Rn5yBEnSV0WBMYVhXB28s\u002B9yiWohAAAACDDWYQ8VFzCOyV0GE/7AXaQAAAAEant5EeZS07F8ODiffVOhw5LG4FCDbNDuutZk7UOyW/vo5s1jsk0YorwJMRsh37CRtYviG3viK2jRG74WhwQqc=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 80,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 80,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "pdks-sunucu",
+        "Name": "PDKS Sunucu",
+        "Host": "pdks-server.gen.local",
+        "Group": "Yerel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [
+          {
+            "Port": 5080
+          }
+        ],
+        "Http": [
+          {
+            "Url": "http://192.168.2.205/",
+            "ExpectedStatusCodes": [],
+            "IgnoreCertificateErrors": false,
+            "WarnAboveMs": 1500
+          },
+          {
+            "Url": "http://wctakip/",
+            "ExpectedStatusCodes": [],
+            "IgnoreCertificateErrors": false,
+            "WarnAboveMs": 1500
+          }
+        ],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAD/FHH\u002BI0ZoLtLpOmsy4gdy4mHUbI2EMNFAnpGqMwFrIgAAAAAOgAAAAAIAACAAAACvSJ0x9w4DaEBxhV/GMainY9nLcZK5uEYS3hAI4i5jHRAAAACvXKyklDqND\u002BkdLJbblfeXQAAAAO1anZJvL8ibYZlUbVyl4D6t2vF1EKp5Oe3KwhZpwbTcU9BPEFTMVtkocfKuD4en9EwqkymNlj8ylwX7XNgVFFg=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "dosya-sunucusu",
+        "Name": "Dosya Sunucusu",
+        "Host": "192.168.2.199",
+        "Group": "Genel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GDATA\\Administrator",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAACvODHrRjcRTgano1nxuiNN9hEmPaLSFz0KtbeBLqWnIQAAAAAOgAAAAAIAACAAAAC4NgloYGpiV8XDHrfVFgNTCqFAvRVfv90LKUTMr0uUFRAAAAAMwj9Yl/v6Bb63LdLsqP/SQAAAAENQun/EOhJdj5gsWLoD4Qn3OpBh6yX4a1WaDA5M8ZBqq6Vs5RKiA7Gnj9rxmEAZA9XZPDnnRi3pBDQfdczRECU=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "netsis-server",
+        "Name": "Netsis Server",
+        "Host": "192.168.2.45",
+        "Group": "Genel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "NETSIS\\Administrator",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABCL7CY8wrxtYBDHi2ppOjA4vYqTgY8p8eaOsvp2MT14AAAAAAOgAAAAAIAACAAAABHIZ0sPDRKUE/qn/vExidVY84AQNfrRs49LflyVlezNxAAAAA8\u002BWFQIWNAnkVcyEyvKK/sQAAAAAb\u002BMnG9OkvFzO0aEi1k\u002BcYvPMSJh5nRdGMmV1volwQZgcOGdJaABScDyJHeg\u002BJu3I3VfB7us/PWYwDTE4IoHz4=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "gms-server",
+        "Name": "GMS Server",
+        "Host": "192.168.2.2",
+        "Group": "Genel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GMS02\\Administrator",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAADae6bRidhND7eosryhCC324tjqa2VpO2t/QDbNPrFCugAAAAAOgAAAAAIAACAAAADtnN7TXUQ1IaUOVnTLp6F7zzvf8B2v\u002BkoUHWJreHWIZhAAAAAXNy7t7gpPTsHOIYPMlwPmQAAAABG\u002B4GVI5GhRXVqt2htAgfHWIRfeF1n5mxTKyk9DWMTZOn20Oyk7nEdFkqKrbr\u002BswpzcB7BygZd50m4WhMmpKis=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "deneme-sunucu",
+        "Name": "Melih H\u0130DAYETO\u011ELU",
+        "Host": "192.168.2.144",
+        "Group": "Yerel / SATIN ALMA",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAA6xf7ges6tYShM4pOm/tQTDUbtLx1tYHN2ZCktCNG3owAAAAAOgAAAAAIAACAAAAACy6J81EXyPnhrBISf9/LcfLbK3rB7o5FUorcbUTztZhAAAAADsg68Oc37RBdPyBJRfg3rQAAAAFxNSYngz9ee8gI\u002BDjHU9xX4tOuKyunJYFRX0EvALnpavcr7rwerSzSVUAoYLy1YqrYdS9kLZ/b7o0715EhUQ\u002B0=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "mevlut-alic",
+        "Name": "Mevl\u00FCt ALI\u00C7",
+        "Host": "192.168.2.57",
+        "Group": "Yerel / PLANLAMA",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAAVxyaQEG8JCaDpDjrsI7Tc2TZK9oYUVGLdWQoqSpFBEwAAAAAOgAAAAAIAACAAAAAI3BvDdOyj2E6VvIItymWXmAR61wEbzXbg\u002BOPqYw1jUhAAAACVHlu1NE3w2dmXm/QQDKcDQAAAAANKHfYHXbX8cdeIH1ym39d\u002BgWaZqGac/a5B9wrhnn9wS1SjGmC1CCKCqG/PwvIsWea08lI8X\u002BXpsR7xuXyrWZo=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "smartfactory",
+        "Name": "SmartFactory",
+        "Host": "192.168.2.21",
+        "Group": "Genel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [
+          {
+            "Port": 100
+          },
+          {
+            "Port": 80
+          },
+          {
+            "Port": 81
+          },
+          {
+            "Port": 92
+          },
+          {
+            "Port": 99
+          }
+        ],
+        "Http": [
+          {
+            "Url": "http://192.168.2.21/",
+            "ExpectedStatusCodes": [],
+            "IgnoreCertificateErrors": false,
+            "WarnAboveMs": 1500
+          }
+        ],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "WIN-7U972JEKGCI\\Administrator",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAB\u002B7h0mQ5Xs2jCs/l9DEY\u002BfvyrhTNgFWzsSeB3\u002BmPqJIQAAAAAOgAAAAAIAACAAAACD0k6gLxMxbuBod2ZCNlVFzlU4xt8ZBXoP9Xz0LUmulRAAAAAjNWTo9nlfDX3336aQ6WjBQAAAAM9V8CaZxyUur7b2/d\u002BBfAptyJpG5Yc/JMYTl2d9cHVdzfo\u002BJJ/jfSmVYQihTi49tqiExyt3BPcxWui3U0YS2qE=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "wmware",
+        "Name": "WMware",
+        "Host": "192.168.2.50",
+        "Group": "Genel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": false,
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "firewall",
+        "Name": "Firewall",
+        "Host": "10.42.80.2",
+        "Group": "Genel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [
+          {
+            "Port": 45643
+          }
+        ],
+        "Http": [
+          {
+            "Url": "https://10.42.80.2:45643/",
+            "ExpectedStatusCodes": [],
+            "IgnoreCertificateErrors": true,
+            "WarnAboveMs": 1500
+          }
+        ],
+        "WindowsMetrics": {
+          "Enabled": false,
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "serkan-eroglu",
+        "Name": "Serkan ERO\u011ELU",
+        "Host": "192.168.2.77",
+        "Group": "Yerel / BAKIM",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": false,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "BAKIM-PC\\Administrator",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAApv0OuRyPo3h7JP0vbPts45uvY0HkBUgmiWIyZuJWP8AAAAAAOgAAAAAIAACAAAADe1ZftmOkmpF3RrxhlqiqG57MFegMMozrXmawm9eJ\u002BBRAAAACLCeYeOyFT8RSaMDB7lQW7QAAAAK8RTBVJUEm/9yqL4od0/zzYkwVphqs3R\u002Bl5YMg2QmujToIRqzdBAEY8QTVIwPN1mDrZSxDFHdzspRq2ARtYKKI=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "fatih-ayma",
+        "Name": "Fatih AYMA",
+        "Host": "192.168.2.64",
+        "Group": "Yerel / IHRACAT",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABhualzg8tdMSAwegk0hOQYjxIhyYrM7\u002Bjd7WiZnMu4ZgAAAAAOgAAAAAIAACAAAAC5Pn2OEDI4ZdJ4RYoK2YWuW73hl7uRy0YPl48LPKZqdxAAAABXRDxDW1aP2/OX/1rz6inTQAAAAJwNcG\u002BgsabLs7M2phhScckT6vxbfnFJiRBvIZtUebECre\u002BI3\u002BC4fquA21QLWI4\u002BFY1Ru6a6WClC0JWGXOql/Xw=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "kalite-pc",
+        "Name": "Kalite PC",
+        "Host": "192.168.2.66",
+        "Group": "Yerel / KALITE",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAAw4sPKvy9Fm8I8XxLBziG/318HZGgd\u002B\u002B2merBWkVhsxQAAAAAOgAAAAAIAACAAAABaeN75ePN\u002Bm6v88eh5N6imLrK/mq\u002BDiorQFkl83GO/8xAAAABLDFU9VL05pbZu/Le6Qxv3QAAAACcnUfYgFjS87UMn3VhUkmRtT2Pw0GLn7\u002B5WPoduJlCWqdR72Tj7gID8Z0qERXkClsTdzgcFXM\u002BBe\u002B8GI2D6kEA=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "mesut-celik",
+        "Name": "Mesut \u00C7EL\u0130K",
+        "Host": "192.168.2.184",
+        "Group": "Yerel / IHRACAT",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABjH6oUxgagqCcHS8DCM99qBsOy\u002BqJVrfn7O/5MELC7qwAAAAAOgAAAAAIAACAAAAAUrqlHYGyGHtjKR63KJ9sC6ZdNVPh8YN18mtdPvgUrxRAAAABw66YPoJuLptOBiHSq8vLfQAAAAMwW\u002BLmsWkpSTrLOF3ikbriP/vaWX9G2z2NgZPGLbxFpc1ReEOuNykGhldH3N3sdgpiwF0vLw94zWcocESTf0lM=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "emre-cakir",
+        "Name": "Emre \u00C7AKIR",
+        "Host": "192.168.2.76",
+        "Group": "Yerel / SSH",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAACiHzgORTLQpdjbqwR3L1c\u002BA6v43DFldHE4LdsqWVHaRQAAAAAOgAAAAAIAACAAAABFaoBpA5hdOYVbiw1vb5vjI8QeseWXLIIf2PCaCanj1hAAAACHw5HEnVmhsxaUHPDh\u002BZ\u002BEQAAAAEtT8OuJh6y357ZMk0Or6PA6qT5dpFiEWz910vkkjDzhp0RRQu8M2xcJcZ21QHnLWKl5oPFJtlaV\u002BSLAGVbHJaw=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "mustafa-erduran",
+        "Name": "Mustafa ERDURAN",
+        "Host": "192.168.2.218",
+        "Group": "Yerel / IHRACAT",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAAA9KjpIHhLgCaMyZPSZhPFQbDkUqBq3c1y83LSXyN\u002BZcgAAAAAOgAAAAAIAACAAAACNoPH1uynd3q55hNYiuXzU1meA\u002BDgaTckn2PGqlgFyQxAAAAA\u002Bp9NKssLiinpM20dgWPj8QAAAAIIKtoAw9MbKpZACCz6zkXeUpbYO3Et1RipDfhbHf/6PIjKpRfK0ynsjxqCqoX16dnLHy\u002BI7yrgDrNR8Kl0SyfI=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "rumeysa-cakmak",
+        "Name": "R\u00FCmeysa \u00C7AKMAK",
+        "Host": "192.168.2.161",
+        "Group": "Genel / LAB",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "DESKTOP-I602H84\\Administrator",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAACvjsIoowUye9KP/IvgaYBS5\u002BiFKMqanPON1TXK4JIccgAAAAAOgAAAAAIAACAAAAAREVPjfr0ykhy7AhZ51wEeadwwAI47HZj8uSQwXOQsZRAAAAA\u002B2sxXRbiKRNajWF0aE5N2QAAAANjDQlBEdFTBtui27A2FyGDcvpl9rQdSaDQ5SwceqaPJNtDjfLRmJENoOCUwVhznXqgnayD1X2\u002BwKfAjPyt5jTs=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "guvenlik",
+        "Name": "G\u00FCvenlik",
+        "Host": "192.168.2.70",
+        "Group": "Yerel / IDARI ISLER",
+        "Category": "Computer",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABqSmjJ/NhkL0Mo/DW6ORggA29IPx20E9aA0jLYIPirQAAAAAAOgAAAAAIAACAAAACmMiCNvjX8\u002BinXqJ29J4RjkoaIrb\u002B3c1\u002BUXj5BHyxlIRAAAACWNcUmKnFJ94MJwEY6czMdQAAAADkGddI/XzWI6WllcIk3KGtTvfoZx76rpLU12b1w2ZVrpfRE2JaeLD8J0nbo1/ZseezFS7sZ//uERuAs\u002BtWeQDw=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "accontrolsv",
+        "Name": "SVACCONTROL",
+        "Host": "192.168.2.206",
+        "Group": "Yerel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABklw0Afz29EzAwmWM2uVHXGI/jo166ry71RxdeatiYZAAAAAAOgAAAAAIAACAAAADAbgs8lFBKggEU\u002BODwXBTfmj5t2GXNS4uXQEJAHgVKTBAAAABI4LFIwIClZpwH35/xHXoKQAAAAKApqhexR9JvUBhWt8ZjszfAKPcSXsJPzFa5hglnD3Mqu5TliYSRZEmou0dU3Ubb4mdPCIqNTfXWcIRsq5UlTf4=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      },
+      {
+        "Id": "btdestek",
+        "Name": "BTDESTEK",
+        "Host": "btdestek.gen.local",
+        "Group": "Yerel",
+        "Category": "Server",
+        "Enabled": true,
+        "Ping": {
+          "Enabled": true,
+          "WarnAboveMs": 250
+        },
+        "Ports": [],
+        "Http": [],
+        "WindowsMetrics": {
+          "Enabled": true,
+          "Username": "GEN\\muharrem.rahat",
+          "Password": "enc:AQAAANCMnd8BFdERjHoAwE/Cl\u002BsBAAAA3DLY5E7u/EqBVdUjOJrwYQAAAAACAAAAAAAQZgAAAAEAACAAAABvl1SMIjr1zMaAdpOMWwIxSK4Un5ofGtmSfr1UXIIhFwAAAAAOgAAAAAIAACAAAACgDfSJRKeL2fR/zoVF8Wo5klRLHGeyRkWd3lFKF3Rm/BAAAAC1yMRyVEQ\u002B/gAGwTf8BFuNQAAAAPcDdwWGiQ/d1FmrcFsxhDuBX7e3oc3S4aKqwxms5ApBWlE1FeBVZYu7BnotczvjDiSF0u\u002B1WX7iihAkQXqtTeM=",
+          "TimeoutMs": 15000,
+          "CpuWarnPercent": 80,
+          "CpuCriticalPercent": 95,
+          "MemoryWarnPercent": 85,
+          "MemoryCriticalPercent": 95,
+          "DiskWarnPercent": 85,
+          "DiskCriticalPercent": 95,
+          "Drives": []
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sunucu Durum Paneli</title>
+
+  <!-- Ana ekrana eklenince uygulama gibi calisma (iPhone + Android) -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Sunucular">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f1419">
+  <meta name="format-detection" content="telephone=no">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>🖥️</text></svg>">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <h1>Sunucu Durum Paneli</h1>
+    </div>
+
+    <div class="topbar-actions">
+      <input id="filter" type="search" placeholder="Ara (ad, adres, bölüm)..." autocomplete="off">
+
+      <select id="groupFilter" class="group-filter" title="Bölüm / departman">
+        <option value="">Tüm bölümler</option>
+      </select>
+
+      <label class="inline-field" title="Arka plandaki kontrol turunun araligi">
+        <span>Aralık</span>
+        <input id="interval" type="number" min="5" max="3600" step="5">
+        <span>sn</span>
+      </label>
+
+      <label class="toggle">
+        <input id="autoRefresh" type="checkbox" checked>
+        <span>Otomatik yenile</span>
+      </label>
+
+      <button id="themeBtn" type="button" class="ghost icon" title="Tema değiştir">🌗</button>
+      <button id="settingsBtn" type="button" class="ghost icon" title="Ayarlar">⚙️</button>
+      <button id="logoutBtn" type="button" class="ghost" hidden>Çıkış</button>
+      <button id="pdfBtn" type="button" class="ghost" title="Görünümü PDF'e aktar (ekrandaki gibi)">🖨 PDF</button>
+      <button id="wordBtn" type="button" class="ghost" title="Görünümü Word'e aktar (tablo)">📄 Word</button>
+      <button id="refreshBtn" type="button" class="ghost">Şimdi kontrol et</button>
+      <button id="addBtn" type="button">+ Sunucu ekle</button>
+    </div>
+  </header>
+
+  <nav class="category-tabs" id="categoryTabs" aria-label="Cihaz türü">
+    <button type="button" class="cat-tab" data-category="all">
+      Tümü <em data-count="all">0</em>
+    </button>
+    <button type="button" class="cat-tab" data-category="Server">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"></rect><rect x="3" y="13" width="18" height="7" rx="2"></rect><path d="M7 7.5h.01M7 16.5h.01"></path></svg>
+      Sunucular <em data-count="Server">0</em>
+    </button>
+    <button type="button" class="cat-tab" data-category="Computer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
+      Bilgisayarlar <em data-count="Computer">0</em>
+    </button>
+  </nav>
+
+  <!-- Yalnızca yazdırma/PDF çıktısında görünür -->
+  <div id="printHeader" class="print-header" aria-hidden="true"></div>
+
+  <section class="summary" id="summary">
+    <div class="stat stat-total"><span class="stat-value" data-stat="total">–</span><span class="stat-label">Toplam</span></div>
+    <div class="stat stat-up"><span class="stat-value" data-stat="up">–</span><span class="stat-label">Çalışıyor</span></div>
+    <div class="stat stat-warn"><span class="stat-value" data-stat="warning">–</span><span class="stat-label">Uyarı</span></div>
+    <div class="stat stat-down"><span class="stat-value" data-stat="down">–</span><span class="stat-label">Sorunlu</span></div>
+    <div class="stat stat-offline"><span class="stat-value" data-stat="offline">–</span><span class="stat-label">Kapalı</span></div>
+    <div class="stat stat-unknown"><span class="stat-value" data-stat="unknown">–</span><span class="stat-label">Bilinmiyor</span></div>
+  </section>
+
+  <div class="health-bar" id="healthBar" title="Sunucuların durum dağılımı"></div>
+
+  <main id="content">
+    <p class="placeholder">İlk kontrol turu bekleniyor…</p>
+  </main>
+
+  <section id="passiveDevices" class="passive-wrap"></section>
+
+  <footer class="footer">
+    <span id="lastRun">–</span>
+    <span id="toast" class="toast" hidden></span>
+  </footer>
+
+  <!-- ============ iPhone: ana ekrana ekleme ipucu ============ -->
+  <div id="installHint" class="install-hint" hidden>
+    <img src="/apple-touch-icon.png" alt="" class="install-hint-icon">
+    <div class="install-hint-text">
+      <strong>Uygulama olarak ekleyin</strong><br>
+      Safari'de
+      <svg class="share-icon" viewBox="0 0 24 24" aria-label="Paylaş" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12"></path><path d="M7 8l5-5 5 5"></path><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path>
+      </svg>
+      <b>Paylaş</b> → <b>Ana Ekrana Ekle</b>'ye dokunun.
+    </div>
+    <button type="button" class="ghost icon" id="installHintClose" title="Kapat">✕</button>
+  </div>
+
+  <!-- ============ Sunucu detayı + canlı grafikler ============ -->
+  <div id="backdrop" class="backdrop" hidden></div>
+
+  <aside id="drawer" class="drawer" hidden aria-label="Sunucu detayı">
+    <div class="drawer-head">
+      <div class="drawer-ident">
+        <div class="drawer-title" id="drawerTitle">–</div>
+        <div class="drawer-host" id="drawerHost"></div>
+      </div>
+      <div class="drawer-buttons">
+        <button type="button" class="ghost" id="drawerRefresh">Kontrol et</button>
+        <button type="button" class="ghost" id="drawerEdit">Düzenle</button>
+        <button type="button" class="ghost icon" id="drawerClose" title="Kapat">✕</button>
+      </div>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+
+  <!-- ============ Sunucu ekleme / düzenleme formu ============ -->
+  <div id="formModal" class="modal" hidden>
+    <form id="serverForm" class="modal-card" autocomplete="off">
+      <div class="modal-head">
+        <h2 id="formTitle">Sunucu ekle</h2>
+        <button type="button" class="ghost icon" id="formClose" title="Kapat">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <fieldset>
+          <legend>Kimlik</legend>
+          <div class="field-row">
+            <label class="field">
+              <span>Görünen ad</span>
+              <input id="fName" type="text" placeholder="Web Sunucu">
+            </label>
+            <label class="field">
+              <span>IP veya hostname *</span>
+              <input id="fHost" type="text" placeholder="10.0.0.10" required>
+            </label>
+          </div>
+          <div class="field-row">
+            <label class="field">
+              <span>Tür</span>
+              <select id="fCategory">
+                <option value="Server">Sunucu</option>
+                <option value="Computer">Bilgisayar</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Grup / bölüm</span>
+              <input id="fGroup" type="text" placeholder="Yerel  ·  ya da  Yerel / SSH" list="groupList">
+              <datalist id="groupList"></datalist>
+              <small class="field-hint"><code>/</code> ile alt grup: örn. <code>Genel / SSH</code></small>
+            </label>
+            <label class="field checkbox">
+              <input id="fEnabled" type="checkbox" checked>
+              <span>İzlemeye dahil et</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Ping</legend>
+          <div class="field-row">
+            <label class="field checkbox">
+              <input id="fPingEnabled" type="checkbox" checked>
+              <span>Ping kontrolü yap</span>
+            </label>
+            <label class="field">
+              <span>Uyarı eşiği (ms)</span>
+              <input id="fPingWarn" type="number" min="0" step="10" value="250">
+            </label>
+          </div>
+          <p class="hint">ICMP kapalı ortamlarda ping kapatılıp port/HTTP kontrolü kullanılmalı.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>TCP portları</legend>
+          <div id="portRows" class="rows"></div>
+          <button type="button" class="ghost small" id="addPort">+ Port ekle</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>HTTP kontrolleri</legend>
+          <div id="httpRows" class="rows"></div>
+          <button type="button" class="ghost small" id="addHttp">+ URL ekle</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Windows metrikleri (WMI)</legend>
+          <label class="field checkbox">
+            <input id="fWmiEnabled" type="checkbox">
+            <span>CPU / RAM / disk topla</span>
+          </label>
+
+          <div id="wmiFields" class="wmi-fields">
+            <div class="field-row">
+              <label class="field">
+                <span>Kullanıcı adı</span>
+                <input id="fWmiUser" type="text" placeholder="DOMAIN\izleme">
+              </label>
+              <label class="field">
+                <span>Parola</span>
+                <input id="fWmiPass" type="password" placeholder="değiştirmemek için boş bırakın">
+              </label>
+            </div>
+            <p class="hint" id="wmiPassHint"></p>
+
+            <div class="field-row">
+              <label class="field">
+                <span>CPU uyarı %</span>
+                <input id="fCpuWarn" type="number" min="0" max="100" value="80">
+              </label>
+              <label class="field">
+                <span>RAM uyarı %</span>
+                <input id="fMemWarn" type="number" min="0" max="100" value="85">
+              </label>
+              <label class="field">
+                <span>Disk uyarı %</span>
+                <input id="fDiskWarn" type="number" min="0" max="100" value="85">
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Sürücüler (boş = hepsi)</span>
+              <input id="fDrives" type="text" placeholder="C:, D:">
+            </label>
+
+            <p class="hint">
+              Aynı makineyi (<code>localhost</code>) izlerken kullanıcı adı/parola boş bırakılmalı.
+              Uzak sunucular için hedefte WMI-In güvenlik duvarı kuralı açık olmalı.
+            </p>
+          </div>
+        </fieldset>
+
+        <p class="form-error" id="formError" hidden></p>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="danger" id="formDelete" hidden>Sil</button>
+        <span class="spacer"></span>
+        <button type="button" class="ghost" id="formCancel">Vazgeç</button>
+        <button type="submit" id="formSave">Kaydet</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Ayarlar: genel, bildirim, güvenlik ============ -->
+  <div id="settingsModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Ayarlar</h2>
+        <button type="button" class="ghost icon" id="settingsClose" title="Kapat">✕</button>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="general">Genel</button>
+        <button type="button" class="tab" data-tab="notify">Bildirim</button>
+        <button type="button" class="tab" data-tab="security">Güvenlik</button>
+        <button type="button" class="tab" data-tab="dns">DNS / Ağ</button>
+        <button type="button" class="tab" data-tab="report">Uptime raporu</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Genel -->
+        <form class="tab-panel" data-panel="general" id="generalForm">
+          <fieldset>
+            <legend>İzleme</legend>
+            <div class="field-row">
+              <label class="field"><span>Kontrol aralığı (sn)</span><input id="sInterval" type="number" min="5" max="3600"></label>
+              <label class="field"><span>Zaman aşımı (ms)</span><input id="sTimeout" type="number" min="500" max="60000" step="500"></label>
+            </div>
+            <div class="field-row">
+              <label class="field"><span>Grafikte gösterilen ölçüm</span><input id="sHistory" type="number" min="10" max="2000"></label>
+              <label class="field"><span>Veritabanında saklama (gün)</span><input id="sRetention" type="number" min="1" max="3650"></label>
+            </div>
+            <p class="hint">Ölçümler <code>history.db</code> dosyasına yazılır; saklama süresinden eski kayıtlar 6 saatte bir temizlenir.</p>
+          </fieldset>
+          <p class="form-error" id="generalError" hidden></p>
+          <div class="panel-actions"><button type="submit">Kaydet</button></div>
+        </form>
+
+        <!-- Bildirim -->
+        <form class="tab-panel" data-panel="notify" id="notifyForm" hidden>
+          <fieldset>
+            <legend>Genel</legend>
+            <div class="field-row">
+              <label class="field checkbox"><input id="nEnabled" type="checkbox"><span>Bildirimleri etkinleştir</span></label>
+              <label class="field checkbox"><input id="nRecovery" type="checkbox"><span>Düzelince de bildir</span></label>
+            </div>
+            <div class="field-row">
+              <label class="field checkbox"><input id="nComputers" type="checkbox"><span>Bilgisayarlar kapanınca da bildir</span></label>
+            </div>
+            <div class="field-row">
+              <label class="field"><span>Kaç tur üst üste sorunluysa bildir</span><input id="nThreshold" type="number" min="1" max="100"></label>
+            </div>
+            <p class="hint">Eşik 2 ve aralık 30 sn ise, sunucu ~1 dakika boyunca sorunlu kalmadan bildirim gitmez. Anlık dalgalanmalarda gereksiz alarm üretmez.</p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Değişiklik & güvenlik uyarıları</legend>
+            <p class="hint" style="margin-top:0">
+              Bilgisayarlar periyodik taranır; bir şey değişince yukarıdaki e-posta/webhook ile bildirilir.
+              İlk taramada mevcut durum "normal" kabul edilir, uyarı gelmez.
+            </p>
+            <div class="field-row">
+              <label class="field checkbox"><input id="cEnabled" type="checkbox"><span>Değişiklik izlemeyi aç</span></label>
+              <label class="field"><span>Tarama aralığı (dk)</span><input id="cInterval" type="number" min="5" max="1440"></label>
+            </div>
+            <div class="field-row">
+              <label class="field checkbox"><input id="cAv" type="checkbox"><span>Antivirüs (kapandı / güncel değil / kaldırıldı)</span></label>
+            </div>
+            <div class="field-row">
+              <label class="field checkbox"><input id="cSoftware" type="checkbox"><span>Yeni program kuruldu / kaldırıldı</span></label>
+            </div>
+            <div class="field-row">
+              <label class="field checkbox"><input id="cUsb" type="checkbox"><span>Yeni USB bellek takıldı</span></label>
+            </div>
+            <p class="hint">Program taraması ağırdır; çok bilgisayarınız varsa aralığı yüksek tutun (ör. 120 dk) ya da program iznini kapatın.</p>
+          </fieldset>
+
+          <fieldset>
+            <legend>E-posta (SMTP)</legend>
+            <label class="field checkbox"><input id="eEnabled" type="checkbox"><span>E-posta gönder</span></label>
+            <div class="field-row">
+              <label class="field"><span>SMTP sunucusu</span><input id="eHost" type="text" placeholder="mail.gen.local"></label>
+              <label class="field" style="max-width:110px"><span>Port</span><input id="ePort" type="number" min="1" max="65535"></label>
+              <label class="field checkbox" style="max-width:120px"><input id="eSsl" type="checkbox"><span>SSL/TLS</span></label>
+            </div>
+            <div class="field-row">
+              <label class="field"><span>Kullanıcı adı (opsiyonel)</span><input id="eUser" type="text"></label>
+              <label class="field"><span>Parola</span><input id="ePass" type="password" placeholder="değiştirmemek için boş bırakın"></label>
+            </div>
+            <div class="field-row">
+              <label class="field"><span>Gönderen</span><input id="eFrom" type="text" placeholder="izleme@gen.local"></label>
+              <label class="field"><span>Alıcılar (virgülle)</span><input id="eTo" type="text" placeholder="bilgiislem@gen.local"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Teams / Slack webhook</legend>
+            <label class="field checkbox"><input id="wEnabled" type="checkbox"><span>Webhook'a gönder</span></label>
+            <label class="field"><span>Webhook adresi</span><input id="wUrl" type="text" placeholder="https://..."></label>
+            <p class="hint">Teams'te kanal → Workflows → "Post to a channel when a webhook request is received" ile adres alınabilir. Adres gizli bir anahtar içerir, paylaşmayın.</p>
+          </fieldset>
+
+          <p class="form-error" id="notifyError" hidden></p>
+          <div class="panel-actions">
+            <button type="button" class="ghost" id="notifyTest">Test gönder</button>
+            <button type="submit">Kaydet</button>
+          </div>
+        </form>
+
+        <!-- Güvenlik -->
+        <form class="tab-panel" data-panel="security" id="securityForm" hidden>
+          <fieldset>
+            <legend>Panel girişi</legend>
+            <label class="field checkbox"><input id="aEnabled" type="checkbox"><span>Panele girişi zorunlu kıl</span></label>
+            <div class="field-row">
+              <label class="field"><span>Kullanıcı adı</span><input id="aUser" type="text" autocomplete="off"></label>
+              <label class="field"><span>Yeni parola (en az 8 karakter)</span><input id="aPass" type="password" autocomplete="new-password" placeholder="değiştirmemek için boş bırakın"></label>
+            </div>
+            <p class="hint">
+              Girişi açtığınızda bu sayfayı açan herkes kullanıcı adı ve parola ister. Parolayı değiştirmek
+              mevcut tüm oturumları kapatır. Parolayı unutursanız <code>servers.json</code> içinde
+              <code>"Auth": { "Enabled": false }</code> yapıp uygulamayı yeniden başlatın.
+            </p>
+          </fieldset>
+          <p class="form-error" id="securityError" hidden></p>
+          <div class="panel-actions"><button type="submit">Kaydet</button></div>
+        </form>
+
+        <!-- DNS / Ağ -->
+        <div class="tab-panel" data-panel="dns" hidden>
+          <fieldset>
+            <legend>Alan adı erişim raporu</legend>
+            <p class="hint" style="margin-top:0">
+              Domain controller'daki DNS sunucusu, bir bilgisayarın hangi <b>alan adlarına</b> (örn. youtube.com)
+              eriştiğini görür. Aşağıdaki toplayıcıyı DC'ye kurunca, her bilgisayarın kartında "en çok erişilen
+              alan adları" görünür. <b>Yalnızca alan adı sayılır</b> — tam adres, sayfa içeriği veya açık sekme okunmaz.
+            </p>
+
+            <div class="dns-status" id="dnsStatus">Durum okunuyor…</div>
+
+            <ol class="setup-steps">
+              <li>
+                <b>DC'de</b> DNS sorgu günlüğünü açın (yönetici olarak bir kez):
+                <div class="code-copy"><code id="dnsCmdEnable">wevtutil set-log "Microsoft-Windows-DNSServer/Analytical" /enabled:true /rt:false /q:true</code><button type="button" class="ghost small" data-copy="dnsCmdEnable">Kopyala</button></div>
+              </li>
+              <li>
+                <code>dns-toplayici.ps1</code> ve <code>dns-gunlugu-ac.bat</code> dosyalarını DC'ye kopyalayın.
+              </li>
+              <li>
+                <b>DC'de</b> toplayıcıyı 15 dakikada bir çalıştıracak görevi kurun (yönetici PowerShell):
+                <div class="code-copy"><code id="dnsCmdTask">…</code><button type="button" class="ghost small" data-copy="dnsCmdTask">Kopyala</button></div>
+              </li>
+            </ol>
+
+            <p class="hint">
+              Anahtar panele özeldir, gizli tutun. Toplayıcı bu anahtarla panele veri gönderir.
+              Anahtar: <code id="dnsKey">…</code>
+            </p>
+            <p class="hint">
+              <b>Yasal not:</b> Çalışanların internet erişimini denetlemek, önceden yazılı olarak
+              bilgilendirilmiş olmaları koşuluyla mümkündür (KVKK).
+            </p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Gizlenen alan adları</legend>
+            <p class="hint" style="margin-top:0">
+              Buradakiler cihaz raporlarında gösterilmez. Bir alan adını doğrudan listeden de
+              (yanındaki <strong>gizle</strong> ile) ekleyebilirsin. Kaldırınca tekrar görünür.
+            </p>
+            <div class="field-row" style="align-items:flex-end">
+              <label class="field"><span>Alan adı ekle</span><input id="dnsHideInput" type="text" placeholder="ornek.com"></label>
+              <button type="button" id="dnsHideAdd">Gizle</button>
+            </div>
+            <div id="dnsHiddenList" class="hidden-domains"></div>
+          </fieldset>
+        </div>
+
+        <!-- Uptime raporu -->
+        <div class="tab-panel" data-panel="report" hidden>
+          <div class="field-row report-controls">
+            <label class="field" style="max-width:180px">
+              <span>Dönem</span>
+              <select id="reportDays">
+                <option value="1">Son 24 saat</option>
+                <option value="7" selected>Son 7 gün</option>
+                <option value="30">Son 30 gün</option>
+              </select>
+            </label>
+          </div>
+          <div id="reportBody"><p class="placeholder">Yükleniyor…</p></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
