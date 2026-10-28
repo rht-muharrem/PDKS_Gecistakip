@@ -3,10 +3,7 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// Bilgisayarları periyodik tarayıp önceki durumla karşılaştırır; antivirüs, kurulu program
-/// ve USB bellek değişikliklerinde bildirim gönderir. İlk gözlemde (baseline yokken) uyarı üretmez.
-/// </summary>
+
 public sealed class ChangeMonitorWorker : BackgroundService
 {
     private readonly ServerRepository _repository;
@@ -30,7 +27,7 @@ public sealed class ChangeMonitorWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Açılıştan hemen sonra değil, kısa bir bekleme (ilk izleme turları otursun).
+
         try { await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); }
         catch (OperationCanceledException) { return; }
 
@@ -89,19 +86,19 @@ public sealed class ChangeMonitorWorker : BackgroundService
         }
     }
 
-    // --- Antivirüs ---
+
 
     private async Task<List<string>> DetectAvAsync(string id, string host, WindowsMetricsOptions wmi, CancellationToken ct)
     {
         var info = await _wmi.GetDeviceInfoAsync(host, wmi, ct);
         if (info.Error is not null && info.Antivirus.Count == 0)
-            return new();   // ulaşılamadı — atla
+            return new();  
 
         var current = info.Antivirus.Select(a => new AvSnap(a.Name, a.Enabled, a.UpToDate)).ToList();
         var previous = await LoadAsync<List<AvSnap>>(id, "av", ct);
 
         await SaveAsync(id, "av", current, ct);
-        if (previous is null) return new();   // ilk gözlem
+        if (previous is null) return new();   
 
         var changes = new List<string>();
         foreach (var cur in current)
@@ -122,7 +119,6 @@ public sealed class ChangeMonitorWorker : BackgroundService
         return changes;
     }
 
-    // --- Kurulu programlar (ad bazlı; sürüm güncellemeleri gürültü yapmasın) ---
 
     private async Task<List<string>> DetectProgramsAsync(string id, string host, WindowsMetricsOptions wmi, CancellationToken ct)
     {
@@ -151,7 +147,7 @@ public sealed class ChangeMonitorWorker : BackgroundService
         return changes;
     }
 
-    // --- USB bellek (daha önce hiç görülmemiş seri no) ---
+
 
     private async Task<List<string>> DetectUsbAsync(string id, string host, WindowsMetricsOptions wmi, CancellationToken ct)
     {
@@ -159,7 +155,7 @@ public sealed class ChangeMonitorWorker : BackgroundService
         if (result.Error is not null && result.Devices.Count == 0)
             return new();
 
-        // Kimliği olan aygıtlar (seri no yoksa ad).
+
         var seen = await LoadAsync<List<string>>(id, "usb", ct) ?? new();
         var seenSet = new HashSet<string>(seen, StringComparer.OrdinalIgnoreCase);
 
@@ -181,7 +177,7 @@ public sealed class ChangeMonitorWorker : BackgroundService
         return changes;
     }
 
-    // --- Baseline yardımcıları ---
+
 
     private async Task<T?> LoadAsync<T>(string id, string kind, CancellationToken ct)
     {

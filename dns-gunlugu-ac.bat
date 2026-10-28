@@ -2,11 +2,7 @@
 chcp 65001 >nul
 title DNS Analytical gunlugunu ac
 
-rem ================================================================
-rem  DC UZERINDE, yonetici olarak calistirin.
-rem  DNS sunucusunun sorgu gunlugunu (Analytical) etkinlestirir.
-rem  Bir kez calistirmak yeterlidir; yeniden baslatmalarda acik kalir.
-rem ================================================================
+
 
 net session >nul 2>&1
 if errorlevel 1 (
@@ -15,8 +11,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-rem Analitik (direct) kanalin ayari, kanal ACIKKEN degistirilemez.
-rem Bu yuzden once kapatiyoruz (zaten kapaliysa hatayi yok say), sonra ayarlayip aciyoruz.
+
 echo DNS Analytical gunlugu etkinlestiriliyor...
 
 wevtutil set-log "Microsoft-Windows-DNSServer/Analytical" /enabled:false >nul 2>&1

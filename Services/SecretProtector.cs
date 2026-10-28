@@ -3,11 +3,7 @@ using System.Text;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// WMI parolalarini servers.json icinde duz metin tutmamak icin Windows DPAPI ile sifreler.
-/// Sifreleme uygulamayi calistiran KULLANICIYA baglidir: uygulamayi baska bir hesapla
-/// calistirirsan parolalar cozulemez ve panelden yeniden girilmeleri gerekir.
-/// </summary>
+
 public static class SecretProtector
 {
     private const string Prefix = "enc:";
@@ -17,7 +13,7 @@ public static class SecretProtector
         if (string.IsNullOrEmpty(plain))
             return plain;
 
-        // Zaten sifreliyse tekrar sifreleme.
+
         if (plain.StartsWith(Prefix, StringComparison.Ordinal))
             return plain;
 
@@ -40,7 +36,6 @@ public static class SecretProtector
         if (string.IsNullOrEmpty(stored))
             return stored;
 
-        // Prefix yoksa elle yazilmis duz metin paroladir.
         if (!stored.StartsWith(Prefix, StringComparison.Ordinal))
             return stored;
 

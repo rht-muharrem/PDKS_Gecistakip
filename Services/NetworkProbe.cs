@@ -5,7 +5,7 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>Ping / TCP port / HTTP kontrollerini calistirir.</summary>
+
 public sealed class NetworkProbe
 {
     private readonly IHttpClientFactory _httpClientFactory;

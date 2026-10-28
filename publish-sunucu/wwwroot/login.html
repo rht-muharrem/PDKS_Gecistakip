@@ -30,7 +30,7 @@
     .login-sub { color: var(--text-muted); font-size: 13px; margin: 0 0 22px; }
 
     .login-card .field { margin-bottom: 14px; }
-    /* 16px altindaki yazi boyutunda iPhone odaklaninca sayfayi yakinlastirir */
+
     .login-card input { font-size: 16px; padding: 10px 12px; }
     body { padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
     .login-card button[type="submit"] { width: 100%; padding: 10px; font-size: 14px; margin-top: 6px; }
@@ -67,17 +67,17 @@
     const error = document.getElementById("loginError");
     const button = document.getElementById("loginBtn");
 
-    // Tema tercihini ana panelle paylas.
+
     try {
       const theme = localStorage.getItem("serverMonitorTheme");
       if (theme === "light" || theme === "dark") document.documentElement.setAttribute("data-theme", theme);
-    } catch { /* yok say */ }
+    } catch { }
 
-    // Giris kapaliysa ya da zaten oturum aciksa dogrudan panele git.
+
     fetch("/api/auth/state", { cache: "no-store" })
       .then(r => r.json())
       .then(s => { if (!s.enabled || s.authenticated) location.replace("/"); })
-      .catch(() => { /* sunucuya ulasilamiyorsa formda kal */ });
+      .catch(() => {  });
 
     form.addEventListener("submit", async event => {
       event.preventDefault();

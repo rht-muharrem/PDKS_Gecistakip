@@ -2,7 +2,7 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>Belirlenen araliklarla tum sunuculari kontrol eden, bildirimleri tetikleyen arka plan servisi.</summary>
+
 public sealed class MonitorWorker : BackgroundService
 {
     private static readonly TimeSpan PruneEvery = TimeSpan.FromHours(6);
@@ -67,7 +67,7 @@ public sealed class MonitorWorker : BackgroundService
                 _logger.LogError(ex, "Izleme turu basarisiz oldu.");
             }
 
-            // Aralik panelden degistirilebildigi icin her turda yeniden okunuyor.
+     
             var interval = Math.Max(5, _repository.GetSettings().IntervalSeconds);
 
             try

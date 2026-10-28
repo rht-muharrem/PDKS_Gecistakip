@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting.WindowsServices;
 using ServerMonitor.Models;
 using ServerMonitor.Services;
 
-// Windows servisi olarak calisirken calisma klasoru System32 olur; icerik kokunu exe'nin yanina sabitliyoruz.
+
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
@@ -25,7 +25,7 @@ builder.Services.AddHttpClient(HttpClientNames.Insecure)
     .ConfigureHttpClient(c => c.DefaultRequestHeaders.UserAgent.ParseAdd("ServerMonitor/1.0"))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
     {
-        // Yalnizca IgnoreCertificateErrors = true olan kontroller bu client'i kullanir.
+   
         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
     });
 
@@ -41,8 +41,7 @@ builder.Services.AddSingleton<AlertService>();
 builder.Services.AddHostedService<MonitorWorker>();
 builder.Services.AddHostedService<ChangeMonitorWorker>();
 
-// Oturum cerezini imzalayan anahtarlar diske (DPAPI ile sifreli) yazilir;
-// boylece uygulama yeniden baslayinca herkesin tekrar giris yapmasi gerekmez.
+
 builder.Services.AddDataProtection()
     .SetApplicationName("ServerMonitor")
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")))
@@ -54,10 +53,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.Cookie.Name = "ServerMonitor.Auth";
         o.Cookie.HttpOnly = true;
         o.Cookie.SameSite = SameSiteMode.Strict;
-        // Telefona kurulu uygulamada her acilista tekrar giris istememek icin 7 gun, kullandikca uzar.
+
         o.ExpireTimeSpan = TimeSpan.FromDays(7);
         o.SlidingExpiration = true;
-        // Yonlendirmeyi kendi kapimiz yapiyor; handler sadece 401 donsun.
+
         o.Events.OnRedirectToLogin = ctx => { ctx.Response.StatusCode = 401; return Task.CompletedTask; };
     });
 
@@ -71,11 +70,7 @@ var app = builder.Build();
 
 app.UseAuthentication();
 
-// =========================
-//  Giris kapisi
-// =========================
-// Giris kapaliysa (veya parola tanimsizsa) panel eskisi gibi acik calisir.
-// Aciksa oturum acmamis istekler API'de 401, sayfalarda giris ekranina yonlendirme alir.
+
 app.Use(async (context, next) =>
 {
     var auth = context.RequestServices.GetRequiredService<ServerRepository>().GetAuth();
@@ -100,9 +95,7 @@ app.Use(async (context, next) =>
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// =========================
-//  Giris / cikis
-// =========================
+
 
 app.MapGet("/api/auth/state", (HttpContext http, ServerRepository repo) =>
 {
@@ -127,7 +120,7 @@ app.MapPost("/api/auth/login", async (LoginRequest request, HttpContext http, Se
 
     if (!valid)
     {
-        // Kaba kuvvet denemelerini yavaslatmak icin.
+
         await Task.Delay(800);
         return Results.Json(new { message = "Kullanıcı adı veya parola hatalı." }, statusCode: StatusCodes.Status401Unauthorized);
     }
@@ -136,12 +129,12 @@ app.MapPost("/api/auth/login", async (LoginRequest request, HttpContext http, Se
         new[]
         {
             new Claim(ClaimTypes.Name, auth.Username),
-            // Parola degisince eski oturumlar gecersiz olsun diye.
+   
             new Claim("stamp", auth.PasswordSalt ?? "")
         },
         CookieAuthenticationDefaults.AuthenticationScheme);
 
-    // Kalici cerez: iPhone ana ekran uygulamasi kapatilinca oturum cerezleri silinir, kalici olan kalir.
+
     await http.SignInAsync(
         CookieAuthenticationDefaults.AuthenticationScheme,
         new ClaimsPrincipal(identity),
@@ -168,9 +161,7 @@ app.MapPut("/api/auth/settings", (AuthSettingsRequest request, ServerRepository 
     }
 });
 
-// =========================
-//  Durum / grafik verisi
-// =========================
+
 
 app.MapGet("/api/status", (StatusStore store, ServerRepository repo) =>
 {
@@ -190,7 +181,7 @@ app.MapGet("/api/status/{id}", (string id, StatusStore store) =>
     return status is null ? Results.NotFound(new { message = $"'{id}' bulunamadi." }) : Results.Ok(status);
 });
 
-// hours verilirse veritabanindan (uzun donem), verilmezse bellekteki son olcumler.
+
 app.MapGet("/api/status/{id}/history", async (string id, int? hours, StatusStore store, HistoryStore history, CancellationToken ct) =>
 {
     if (hours is > 0)
@@ -205,7 +196,6 @@ app.MapGet("/api/status/{id}/history", async (string id, int? hours, StatusStore
         : Results.Ok(status.History);
 });
 
-// Donem bazli uptime raporu.
 app.MapGet("/api/uptime", async (int? days, HistoryStore history, ServerRepository repo, CancellationToken ct) =>
 {
     var period = Math.Clamp(days ?? 7, 1, 365);
@@ -241,9 +231,7 @@ app.MapPost("/api/refresh/{id}", async (string id, MonitorService monitor, Cance
         : Results.Ok(status);
 });
 
-// =========================
-//  Sunucu tanimlari (CRUD)
-// =========================
+
 
 app.MapGet("/api/servers", (ServerRepository repo) =>
     Results.Ok(repo.GetServers().Select(ToDto)));
@@ -254,7 +242,7 @@ app.MapGet("/api/servers/{id}", (string id, ServerRepository repo) =>
     return server is null ? Results.NotFound(new { message = $"'{id}' bulunamadi." }) : Results.Ok(ToDto(server));
 });
 
-// Cihazda calisan uygulamalar. Yuk olmasin diye yalnizca detay paneli acikken istenir.
+
 app.MapGet("/api/servers/{id}/processes", async (string id, bool? all, ServerRepository repo, WindowsMetricsProbe wmi, CancellationToken ct) =>
 {
     var server = repo.Get(id);
@@ -267,7 +255,7 @@ app.MapGet("/api/servers/{id}/processes", async (string id, bool? all, ServerRep
     return Results.Ok(await wmi.GetProcessesAsync(server.Host, wmiOptions, all == true, ct));
 });
 
-// Cihaz künye bilgileri (hostname, MAC, marka/model, seri no...).
+
 app.MapGet("/api/servers/{id}/info", async (string id, ServerRepository repo, WindowsMetricsProbe wmi, CancellationToken ct) =>
 {
     var server = repo.Get(id);
@@ -279,7 +267,6 @@ app.MapGet("/api/servers/{id}/info", async (string id, ServerRepository repo, Wi
     return Results.Ok(await wmi.GetDeviceInfoAsync(server.Host, o, ct));
 });
 
-// Kurulu programlar (registry Uninstall). Yalnizca detay acilinca istenir.
 app.MapGet("/api/servers/{id}/programs", async (string id, ServerRepository repo, WindowsMetricsProbe wmi, CancellationToken ct) =>
 {
     var server = repo.Get(id);
@@ -291,7 +278,7 @@ app.MapGet("/api/servers/{id}/programs", async (string id, ServerRepository repo
     return Results.Ok(await wmi.GetInstalledProgramsAsync(server.Host, o, ct));
 });
 
-// USB depolama aygitlari (takili + geçmiş).
+
 app.MapGet("/api/servers/{id}/usb", async (string id, ServerRepository repo, WindowsMetricsProbe wmi, CancellationToken ct) =>
 {
     var server = repo.Get(id);
@@ -355,9 +342,7 @@ app.MapDelete("/api/servers/{id}", async (string id, ServerRepository repo, Stat
     return Results.NoContent();
 });
 
-// =========================
-//  Genel ayarlar ve bildirim
-// =========================
+
 
 app.MapGet("/api/settings", (ServerRepository repo) => Results.Ok(repo.GetSettings()));
 
@@ -395,11 +380,7 @@ app.MapPost("/api/notifications/test", async (AlertService alerts, CancellationT
         : Results.BadRequest(new { ok = false, message = string.Join(" · ", errors) });
 });
 
-// =========================
-//  DNS icgoru
-// =========================
 
-// DC toplayicisi buraya POST eder. X-Ingest-Key ile dogrulanir.
 app.MapPost("/api/dns/ingest", (HttpContext http, DnsIngest packet, ServerRepository repo, DnsInsightStore store) =>
 {
     var expected = repo.GetDns().IngestKey;
@@ -415,14 +396,14 @@ app.MapPost("/api/dns/ingest", (HttpContext http, DnsIngest packet, ServerReposi
     return Results.Ok(new { ok = true, received = packet.Entries.Count });
 });
 
-// Toplayici kurulumu icin anahtar (panel girisi gerekli).
+
 app.MapGet("/api/dns/config", (ServerRepository repo, DnsInsightStore store) =>
 {
     var dns = repo.GetDns();
     return Results.Ok(new { ingestKey = dns.IngestKey, retentionMinutes = dns.RetentionMinutes, hasData = store.HasData });
 });
 
-// Bir cihazin en cok eristigi alan adlari (o cihazin IP'lerine gore).
+
 app.MapGet("/api/servers/{id}/dns", (string id, int? take, bool? all, ServerRepository repo, DnsInsightStore store) =>
 {
     var server = repo.Get(id);
@@ -432,7 +413,7 @@ app.MapGet("/api/servers/{id}/dns", (string id, int? take, bool? all, ServerRepo
     var dns = repo.GetDns();
     var ips = ResolveHostIps(server.Host);
 
-    // all=true: gurultu filtresini uygulama, her seyi goster.
+
     var (updated, window, top) = store.Query(
         ips, Math.Clamp(take ?? 15, 1, 100),
         extraIgnore: dns.IgnoredDomains, allowed: dns.AllowedDomains, applyFilter: all != true);
@@ -440,7 +421,7 @@ app.MapGet("/api/servers/{id}/dns", (string id, int? take, bool? all, ServerRepo
     return Results.Ok(new { updatedUtc = updated, windowMinutes = window, domains = top, hasStore = store.HasData, filtered = all != true });
 });
 
-// Gizlenen alan adlari listesi (panelden yonetim).
+
 app.MapGet("/api/dns/lists", (ServerRepository repo) =>
 {
     var dns = repo.GetDns();
@@ -453,7 +434,7 @@ app.MapPost("/api/dns/ignore", (DomainRequest req, ServerRepository repo) =>
 app.MapPost("/api/dns/unignore", (DomainRequest req, ServerRepository repo) =>
     Results.Ok(new { ignored = repo.RemoveIgnoredDomain(req.Domain ?? "") }));
 
-// Cihaz durumlarinin Word (.docx) ciktisi. category / group ile suzulur (o anki gorunum).
+
 app.MapGet("/api/report/word", (string? category, string? group, StatusStore store) =>
 {
     var servers = store.GetAll().Where(s =>
@@ -473,9 +454,7 @@ app.MapGet("/api/report/word", (string? category, string? group, StatusStore sto
 
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok", time = DateTimeOffset.UtcNow }));
 
-// =========================
-//  PWA simgeleri
-// =========================
+
 
 app.MapGet("/icons/icon-{size:int}.png", (int size, HttpContext http) =>
 {
@@ -486,7 +465,6 @@ app.MapGet("/icons/icon-{size:int}.png", (int size, HttpContext http) =>
     return Results.File(IconRenderer.GetPng(size), "image/png");
 });
 
-// iOS bu adresi sayfada belirtilmese de kendiliginden dener.
 app.MapGet("/apple-touch-icon.png", (HttpContext http) =>
 {
     http.Response.Headers.CacheControl = "public, max-age=604800";
@@ -495,16 +473,14 @@ app.MapGet("/apple-touch-icon.png", (HttpContext http) =>
 
 app.Run();
 
-// =========================
-//  Yardimcilar
-// =========================
+
 
 static bool IsPublicPath(PathString path) =>
     path.Equals("/login.html", StringComparison.OrdinalIgnoreCase) ||
     path.Equals("/style.css", StringComparison.OrdinalIgnoreCase) ||
     path.Equals("/healthz", StringComparison.OrdinalIgnoreCase) ||
     path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase) ||
-    // Manifest ve simgeler cerezsiz istenebilir; giris ekraninda da simge gorunsun.
+
     path.Equals("/manifest.webmanifest", StringComparison.OrdinalIgnoreCase) ||
     path.Equals("/sw.js", StringComparison.OrdinalIgnoreCase) ||
     path.Equals("/apple-touch-icon.png", StringComparison.OrdinalIgnoreCase) ||
@@ -512,11 +488,10 @@ static bool IsPublicPath(PathString path) =>
     path.StartsWithSegments("/api/auth/login") ||
     path.StartsWithSegments("/api/auth/logout") ||
     path.StartsWithSegments("/api/auth/state") ||
-    // DC toplayicisi cerez tasimaz; kendi anahtariyla dogrulanir (handler icinde).
+
     path.StartsWithSegments("/api/dns/ingest");
 
-// Cihazin hostname'ini IP(ler)e cevirir; DNS gunlugundeki istemci IP'siyle eslestirmek icin.
-// IP zaten verilmisse oldugu gibi doner.
+
 static List<string> ResolveHostIps(string host)
 {
     host = host.Trim();
@@ -551,7 +526,6 @@ static object Summarize(IReadOnlyList<ServerStatus> servers) => new
     unknown = servers.Count(s => s.State == HealthState.Unknown)
 };
 
-// Parola disari hicbir zaman verilmez; yerine "kayitli mi" bilgisi doner.
 static object ToDto(ServerDefinition s) => new
 {
     id = s.Id,

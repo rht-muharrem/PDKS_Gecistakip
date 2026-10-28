@@ -5,16 +5,12 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>servers.json dosyasinin kok yapisi: { "Monitor": { ... } }</summary>
+
 internal sealed class MonitorFile
 {
     public MonitorOptions Monitor { get; set; } = new();
 }
 
-/// <summary>
-/// servers.json dosyasini okur ve yazar. Uygulama calisirken sunucu listesinin tek
-/// kaynagi burasidir; panelden yapilan ekleme/duzenleme/silme dogrudan dosyaya islenir.
-/// </summary>
 public sealed class ServerRepository
 {
     private static readonly JsonSerializerOptions FileJson = new()
@@ -22,7 +18,7 @@ public sealed class ServerRepository
         WriteIndented = true,
         PropertyNameCaseInsensitive = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        // "Category": "Computer" gibi okunakli yazilsin (sayi degil).
+
         Converters = { new JsonStringEnumConverter() }
     };
 
@@ -39,7 +35,7 @@ public sealed class ServerRepository
         Load();
     }
 
-    // --- Okuma ---
+
 
     public MonitorSettings GetSettings()
     {
@@ -68,7 +64,7 @@ public sealed class ServerRepository
         }
     }
 
-    // --- Yazma ---
+
 
     public ServerDefinition Add(ServerDefinition input)
     {
@@ -100,13 +96,13 @@ public sealed class ServerRepository
 
             if (server.WindowsMetrics is not null)
             {
-                // Parola alani bos gelirse eskisi korunur (panelde bos birakmak = degistirme).
+        
                 server.WindowsMetrics.Password = string.IsNullOrEmpty(server.WindowsMetrics.Password)
                     ? existing.WindowsMetrics?.Password
                     : SecretProtector.Protect(server.WindowsMetrics.Password);
             }
 
-            // Listeyi mutasyon yerine degistirerek guncelliyoruz; okuyanlar eski nesneyle guvende kalir.
+        
             _data.Servers[index] = server;
             Persist();
             return server;
@@ -137,7 +133,7 @@ public sealed class ServerRepository
         }
     }
 
-    // --- Bildirim ayarlari ---
+  
 
     public NotificationOptions GetNotifications()
     {
@@ -160,21 +156,19 @@ public sealed class ServerRepository
             input.ChangeAlerts.IntervalMinutes = Math.Clamp(input.ChangeAlerts.IntervalMinutes, 5, 1440);
             input.Email.To = input.Email.To.Select(t => t.Trim()).Where(t => t.Length > 0).ToList();
 
-            // Parola bos gelirse eskisi korunur; doluysa sifrelenir.
+           
             input.Email.Password = string.IsNullOrEmpty(input.Email.Password)
                 ? existing.Email?.Password
                 : SecretProtector.Protect(input.Email.Password);
 
-            // Nesneyi degistirerek yaziyoruz; AlertService elindeki eski referansla guvende.
+      
             _data.Notifications = input;
             Persist();
             return input;
         }
     }
 
-    // --- DNS icgoru ayarlari ---
 
-    /// <summary>Toplayici anahtari yoksa uretip kalici yazar; anahtar her zaman dolu doner.</summary>
     public DnsOptions GetDns()
     {
         lock (_gate)
@@ -189,7 +183,7 @@ public sealed class ServerRepository
         }
     }
 
-    /// <summary>Panelden gizlenen alan adlarini yonetir (yeniden baslatmadan, aninda gecerli).</summary>
+
     public IReadOnlyList<string> AddIgnoredDomain(string domain)
     {
         lock (_gate)
@@ -217,7 +211,6 @@ public sealed class ServerRepository
         }
     }
 
-    /// <summary>Girdi bir URL bile olsa (https://site.com/yol) sade alan adina indirger.</summary>
     private static string NormalizeDomain(string input)
     {
         var d = (input ?? "").Trim().ToLowerInvariant();
@@ -227,7 +220,7 @@ public sealed class ServerRepository
         return d.Trim('.', ' ');
     }
 
-    // --- Giris ayarlari ---
+
 
     public AuthOptions GetAuth()
     {
@@ -237,7 +230,7 @@ public sealed class ServerRepository
         }
     }
 
-    /// <summary>Parola bos gelirse mevcut parola korunur. Parolasiz giris etkinlestirilemez.</summary>
+
     public AuthOptions UpdateAuth(bool enabled, string username, string? newPassword)
     {
         lock (_gate)
@@ -267,7 +260,7 @@ public sealed class ServerRepository
         }
     }
 
-    // --- Ic isler ---
+
 
     private void Load()
     {
@@ -293,7 +286,7 @@ public sealed class ServerRepository
                 return;
             }
 
-            // Elle eklenmis, Id'si olmayan kayitlara Id uret.
+    
             foreach (var server in _data.Servers)
             {
                 if (string.IsNullOrWhiteSpace(server.Id))
@@ -310,7 +303,7 @@ public sealed class ServerRepository
         {
             var payload = JsonSerializer.Serialize(new MonitorFile { Monitor = _data }, FileJson);
 
-            // Once gecici dosyaya yaz, sonra yer degistir: yarida kesilirse dosya bozulmasin.
+     
             var tmp = _path + ".tmp";
             File.WriteAllText(tmp, payload);
             File.Move(tmp, _path, overwrite: true);
@@ -322,7 +315,7 @@ public sealed class ServerRepository
         }
     }
 
-    /// <summary>Girdiyi temizler ve dogrular. Gecersizse ArgumentException firlatir.</summary>
+
     private static ServerDefinition Normalize(ServerDefinition input)
     {
         var host = (input.Host ?? "").Trim();
@@ -374,7 +367,6 @@ public sealed class ServerRepository
         return candidate;
     }
 
-    /// <summary>URL'de guvenle kullanilabilecek ASCII bir kimlik uretir.</summary>
     private static string Slugify(string value)
     {
         var sb = new StringBuilder();

@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal
 title ServerMonitor servis kaldirma
 
-rem YONETICI OLARAK calistirin. Kurulum klasoru (veriler dahil) silinmez.
+
 
 set "SERVICE_NAME=ServerMonitor"
 

@@ -6,10 +6,7 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// Uzak (veya yerel) Windows makinelerden WMI/CIM uzerinden CPU, RAM, disk ve uptime bilgisi toplar.
-/// Yalnizca Windows uzerinde calisir; baska platformda Error dolu bir snapshot doner.
-/// </summary>
+
 public sealed class WindowsMetricsProbe
 {
     private readonly ILogger<WindowsMetricsProbe> _logger;
@@ -26,19 +23,11 @@ public sealed class WindowsMetricsProbe
             });
         }
 
-        // WMI cagrilari senkron ve bloklayicidir; thread pool'a tasiyoruz.
+
         return Task.Run(() => Collect(host, options), ct);
     }
 
-    // =====================================================
-    //  Calisan uygulamalar
-    // =====================================================
 
-    /// <summary>
-    /// Cihazda calisan islemleri okuyup kullaniciya ait uygulamalari ayiklar.
-    /// Her turda degil, sadece panelde detay acilinca cagrilir. Komut satiri ve pencere
-    /// basliklari bilerek okunmaz (parola / belge adi gibi hassas bilgi icerebilir).
-    /// </summary>
     public Task<ProcessSnapshot> GetProcessesAsync(string host, WindowsMetricsOptions options, bool includeBackground, CancellationToken ct)
     {
         if (!OperatingSystem.IsWindows())
@@ -129,10 +118,10 @@ public sealed class WindowsMetricsProbe
         }
     }
 
-    /// <summary>Kullanicinin actigi bir uygulama degil, isletim sistemi veya arka plan islemi mi?</summary>
+
     private static bool IsBackgroundProcess(string name, string? path, long session)
     {
-        // Session 0: servisler ve sistem islemleri. Kullanici uygulamalari 1 ve uzeri oturumlarda calisir.
+
         if (session == 0)
             return true;
 
@@ -142,19 +131,16 @@ public sealed class WindowsMetricsProbe
         if (BackgroundProcessNames.Contains(name))
             return true;
 
-        // C:\Windows altindaki her sey (SystemApps dahil) kabuk/arka plan bilesenidir.
-        // "\WindowsApps\" (Store uygulamalari, yeni Teams vb.) bu kontrole takilmaz.
+
         return path is not null && path.Contains(@"\Windows\", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>C:\Windows altinda olmasina ragmen kullanicinin bilerek actigi programlar.</summary>
     private static readonly HashSet<string> UserFacingSystemApps = new(StringComparer.OrdinalIgnoreCase)
     {
         "notepad.exe", "mstsc.exe", "mspaint.exe", "taskmgr.exe", "powershell.exe", "powershell_ise.exe",
         "write.exe", "wordpad.exe", "calc.exe", "snippingtool.exe", "mmc.exe", "regedit.exe", "charmap.exe"
     };
 
-    /// <summary>Program Files altinda calisan ama kullanicinin "acik uygulama" olarak gormedigi yardimcilar.</summary>
     private static readonly HashSet<string> BackgroundProcessNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "System Idle Process", "System", "Registry", "Memory Compression", "Secure System",
@@ -235,9 +221,7 @@ public sealed class WindowsMetricsProbe
         }
     }
 
-    // =====================================================
-    //  Kurulu programlar (registry Uninstall anahtarlari)
-    // =====================================================
+
 
     private const uint HKLM = 0x80000002;
     private const string UninstallPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -256,7 +240,7 @@ public sealed class WindowsMetricsProbe
     {
         try
         {
-            // Registry StdRegProv "root\default" altinda.
+
             var scope = CreateScope(host, options, "root\\default");
             scope.Connect();
             var reg = new ManagementClass(scope, new ManagementPath("StdRegProv"), null);
@@ -273,7 +257,6 @@ public sealed class WindowsMetricsProbe
                     if (string.IsNullOrWhiteSpace(name))
                         continue;
 
-                    // Sistem bilesenlerini ele (her anahtar icin ekstra sorgu sayisini dusuk tutuyoruz).
                     if (RegGetDword(reg, HKLM, keyPath, "SystemComponent") == 1)
                         continue;
 
@@ -286,7 +269,6 @@ public sealed class WindowsMetricsProbe
                         Is32Bit = is32
                     };
 
-                    // Ayni program iki dalda gorunebilir; ad+surum ile tekilleştir.
                     byName[program.Name + "|" + program.Version] = program;
                 }
             }
@@ -305,9 +287,7 @@ public sealed class WindowsMetricsProbe
         }
     }
 
-    // =====================================================
-    //  Cihaz kunye bilgileri (hostname, MAC, marka/model...)
-    // =====================================================
+
 
     public Task<DeviceInfo> GetDeviceInfoAsync(string host, WindowsMetricsOptions options, CancellationToken ct)
     {
@@ -374,7 +354,7 @@ public sealed class WindowsMetricsProbe
             {
                 var mac = n["MACAddress"]?.ToString();
                 var ips = (n["IPAddress"] as string[])?
-                    .Where(ip => !string.IsNullOrWhiteSpace(ip) && ip.Contains('.'))   // IPv4'e odaklan
+                    .Where(ip => !string.IsNullOrWhiteSpace(ip) && ip.Contains('.'))  
                     .ToList() ?? new List<string>();
                 var gw = (n["DefaultIPGateway"] as string[])?.FirstOrDefault();
 
@@ -388,7 +368,7 @@ public sealed class WindowsMetricsProbe
                 });
             }
 
-            // Antivirüs — yalnızca istemci OS'larda root\SecurityCenter2 vardır (sunucularda yok).
+
             var antivirus = new List<AntivirusInfo>();
             try
             {
@@ -403,7 +383,7 @@ public sealed class WindowsMetricsProbe
                     antivirus.Add(new AntivirusInfo { Name = avName.Trim(), Enabled = enabled, UpToDate = upToDate });
                 }
             }
-            catch { /* sunucularda veya SecurityCenter2 yoksa atla */ }
+            catch {  }
 
             // Yazıcılar
             var printers = new List<PrinterInfo>();
@@ -452,10 +432,7 @@ public sealed class WindowsMetricsProbe
         }
     }
 
-    /// <summary>
-    /// SecurityCenter2 productState bit maskesini cozer. 6 haneli hex: [saglayici][gercek zamanli][imza].
-    /// Ortadaki bayt 10/11 = koruma acik; son bayt 00 = imzalar guncel, 10 = guncel degil.
-    /// </summary>
+
     private static (bool Enabled, bool UpToDate) DecodeAvState(object? state)
     {
         try
@@ -471,17 +448,15 @@ public sealed class WindowsMetricsProbe
         }
     }
 
-    // =====================================================
-    //  USB depolama aygitlari (takili + gecmis)
-    // =====================================================
+
 
     private const string UsbStorPath = @"SYSTEM\CurrentControlSet\Enum\USBSTOR";
 
-    // Aygit ozellikleri: baglanma/ayrilma zaman damgalari (FILETIME).
+
     private const string PropGuid = "{83da6326-97a6-4088-9453-a1923f573b29}";
-    private const string PropInstall = "0064";   // ilk kurulum
-    private const string PropArrival = "0066";   // son baglanma
-    private const string PropRemoval = "0067";   // son ayrilma
+    private const string PropInstall = "0064";   
+    private const string PropArrival = "0066";  
+    private const string PropRemoval = "0067";  
 
     public Task<UsbResult> GetUsbAsync(string host, WindowsMetricsOptions options, CancellationToken ct)
     {
@@ -496,7 +471,7 @@ public sealed class WindowsMetricsProbe
     {
         try
         {
-            // Su an takili USB diskler icin cimv2, gecmis icin registry.
+
             var cim = CreateScope(host, options);
             cim.Connect();
 
@@ -518,7 +493,7 @@ public sealed class WindowsMetricsProbe
                 });
             }
 
-            // Gecmis: USBSTOR altindaki her aygit.
+
             var reg = new ManagementClass(CreateRegScope(host, options), new ManagementPath("StdRegProv"), null);
             var history = new List<UsbDevice>();
 
@@ -547,7 +522,7 @@ public sealed class WindowsMetricsProbe
                 }
             }
 
-            // Takili olan ama gecmiste gorunmeyenleri (nadir) de ekle.
+  
             foreach (var disk in currentDisks)
                 if (disk.Serial is null || !history.Any(h => string.Equals(h.Serial, disk.Serial, StringComparison.OrdinalIgnoreCase)))
                     history.Add(disk);
@@ -576,9 +551,6 @@ public sealed class WindowsMetricsProbe
         return scope;
     }
 
-    // =====================================================
-    //  StdRegProv (uzak registry) yardimcilari
-    // =====================================================
 
     [SupportedOSPlatform("windows")]
     private static IEnumerable<string> RegEnumKeys(ManagementClass reg, uint hive, string path)
@@ -644,27 +616,22 @@ public sealed class WindowsMetricsProbe
         catch { return null; }
     }
 
-    /// <summary>
-    /// Aygit ozelligindeki FILETIME zaman damgasini okur. Kayit duzeni Windows surumune gore
-    /// degistiginden birkac olasi yerlesimi sirayla dener; hicbiri tutmazsa null (aygit listesi
-    /// yine calisir, sadece tarih bos gorunur).
-    /// </summary>
+
     [SupportedOSPlatform("windows")]
     private static DateTimeOffset? ReadUsbTimestamp(ManagementClass reg, string propBase, string pid)
     {
-        // Windows sürümüne göre değişen olası yerleşimler:
-        // 1) {GUID}\0066 anahtarı altında "00000000" adlı değer (Win10/11'de en yaygın)
+
         var t = FileTimeFromBinary(RegGetBinary(reg, HKLM, propBase + "\\" + pid, "00000000"));
-        // 2) {GUID}\0066 altında "Data"
+
         t ??= FileTimeFromBinary(RegGetBinary(reg, HKLM, propBase + "\\" + pid, "Data"));
-        // 3) {GUID}\0066 altında varsayılan değer
+        
         t ??= FileTimeFromBinary(RegGetBinary(reg, HKLM, propBase + "\\" + pid, ""));
-        // 4) {GUID} altında doğrudan "0066" adlı değer
+
         t ??= FileTimeFromBinary(RegGetBinary(reg, HKLM, propBase, pid));
         return t;
     }
 
-    // --- Kucuk cevirimler ---
+
 
     private static DateTimeOffset? FileTimeFromBinary(byte[]? bytes)
     {
@@ -680,7 +647,7 @@ public sealed class WindowsMetricsProbe
         catch { return null; }
     }
 
-    // Uninstall InstallDate genelde "yyyyMMdd" biciminde.
+
     private static DateTimeOffset? ParseInstallDate(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw) || raw.Length != 8)
@@ -689,14 +656,13 @@ public sealed class WindowsMetricsProbe
             System.Globalization.DateTimeStyles.AssumeLocal, out var d) ? d : null;
     }
 
-    // USBSTOR instance / serial temizligi: sondaki "&0" gibi ekleri at.
     private static string? CleanSerial(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
             return null;
         var s = raw.Trim();
         var amp = s.IndexOf('&');
-        if (amp > 0 && s.Length - amp <= 3)   // sondaki "&0"
+        if (amp > 0 && s.Length - amp <= 3) 
             s = s[..amp];
         return s.Length == 0 ? null : s;
     }
@@ -709,7 +675,7 @@ public sealed class WindowsMetricsProbe
         return parts.Length > 0 ? CleanSerial(parts[^1]) : null;
     }
 
-    // "Disk&Ven_SanDisk&Prod_Cruzer&Rev_1.00" -> "SanDisk Cruzer"
+
     private static string DeviceClassToName(string deviceClass)
     {
         string Pick(string tag)
@@ -766,11 +732,10 @@ public sealed class WindowsMetricsProbe
             Authentication = AuthenticationLevel.PacketPrivacy
         };
 
-        // Yerel makinede kimlik bilgisi verilemez; WMI hata firlatir.
         if (!IsLocal(host) && !string.IsNullOrWhiteSpace(options.Username))
         {
             connection.Username = options.Username;
-            // Parola dosyada DPAPI ile sifreli tutulur.
+
             connection.Password = SecretProtector.Unprotect(options.Password);
         }
 
@@ -780,11 +745,7 @@ public sealed class WindowsMetricsProbe
 
     private static readonly ConcurrentDictionary<string, string> ResolvedHosts = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// WMI'ye IP ile baglanmak Kerberos'u devre disi birakir - IP icin SPN olmadigindan NTLM'e
-    /// duser ve DCOM bunu reddedebilir ("Erisim engellendi"). Hedef bir IP ise ters DNS ile
-    /// makine adini bulup onu kullaniyoruz; PTR kaydi yoksa IP ile devam edilir.
-    /// </summary>
+
     private static string ResolveWmiTarget(string host) =>
         ResolvedHosts.GetOrAdd(host.Trim(), candidate =>
         {
@@ -802,10 +763,6 @@ public sealed class WindowsMetricsProbe
             }
         });
 
-    /// <summary>
-    /// Makinenin kendisini gosteren tum adresler. WMI, yerel baglantilarda kimlik bilgisi
-    /// kabul etmez (0x80041064) - bu yuzden hedefin kendi IP'miz olup olmadigini bilmek sart.
-    /// </summary>
     private static readonly Lazy<HashSet<string>> LocalAddresses = new(() =>
     {
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -818,15 +775,15 @@ public sealed class WindowsMetricsProbe
             var hostName = Dns.GetHostName();
             set.Add(hostName);
 
-            // FQDN (or. pdks-server.gen.local)
-            try { set.Add(Dns.GetHostEntry(hostName).HostName); } catch { /* DNS yoksa atla */ }
+
+            try { set.Add(Dns.GetHostEntry(hostName).HostName); } catch {  }
 
             foreach (var address in Dns.GetHostAddresses(hostName))
                 set.Add(address.ToString());
         }
         catch
         {
-            // Adresler alinamazsa elimizdeki temel liste ile devam.
+     
         }
 
         return set;
@@ -838,7 +795,7 @@ public sealed class WindowsMetricsProbe
     [SupportedOSPlatform("windows")]
     private (double? Cpu, string? Error) TryGetCpu(ManagementScope scope, WindowsMetricsOptions options)
     {
-        // Once performans sayaci (anlik ve dogru), olmazsa Win32_Processor.LoadPercentage.
+        
         try
         {
             var values = Query(scope, "SELECT PercentProcessorTime FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name = '_Total'", options)
@@ -883,7 +840,7 @@ public sealed class WindowsMetricsProbe
 
         foreach (var os in Query(scope, query, options))
         {
-            // Bu iki deger kilobyte cinsindendir.
+          
             var totalKb = ToDouble(os["TotalVisibleMemorySize"]);
             var freeKb = ToDouble(os["FreePhysicalMemory"]);
 
@@ -907,7 +864,7 @@ public sealed class WindowsMetricsProbe
                 }
                 catch
                 {
-                    // Format bozuksa uptime'i atla.
+                  
                 }
             }
 
@@ -922,7 +879,7 @@ public sealed class WindowsMetricsProbe
     {
         var result = new List<DriveUsage>();
 
-        // DriveType = 3 => yerel sabit disk
+
         foreach (var disk in Query(scope, "SELECT DeviceID, Size, FreeSpace FROM Win32_LogicalDisk WHERE DriveType = 3", options))
         {
             var id = disk["DeviceID"]?.ToString();
@@ -952,7 +909,7 @@ public sealed class WindowsMetricsProbe
     [SupportedOSPlatform("windows")]
     private static IEnumerable<ManagementBaseObject> Query(ManagementScope scope, string query, WindowsMetricsOptions options)
     {
-        // System.IO.EnumerationOptions ile karismamasi icin tam ad kullaniliyor.
+       
         var enumOptions = new System.Management.EnumerationOptions
         {
             Timeout = TimeSpan.FromMilliseconds(options.TimeoutMs),
@@ -984,15 +941,12 @@ public sealed class WindowsMetricsProbe
         }
     }
 
-    /// <summary>
-    /// Hatayi teshis edilebilir hale getirir: hangi katmanda takildigini soyleyen bir aciklama
-    /// ve ham HRESULT. Kodu bilmek guvenlik duvari sorunu ile yetki sorununu ayirmanin tek yolu.
-    /// </summary>
+  
     private static string Describe(Exception ex)
     {
         var baseEx = ex.GetBaseException();
 
-        // ManagementStatus degerleri zaten HRESULT'tir.
+      
         var hresult = baseEx is ManagementException me ? (int)me.ErrorCode : baseEx.HResult;
 
         var hint = (uint)hresult switch

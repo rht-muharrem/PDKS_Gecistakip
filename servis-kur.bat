@@ -3,10 +3,6 @@ chcp 65001 >nul
 setlocal
 title ServerMonitor servis kurulumu
 
-rem ================================================================
-rem  Uygulamayi yayinlar ve Windows servisi olarak kurar.
-rem  YONETICI OLARAK calistirin (sag tik -> Yonetici olarak calistir).
-rem ================================================================
 
 cd /d "%~dp0"
 
@@ -30,7 +26,6 @@ if errorlevel 1 (
 echo Kurulum klasoru: %INSTALL_DIR%
 echo.
 
-rem --- Varsa mevcut servisi durdur (dosyalar kilitli kalmasin) ---
 sc.exe query %SERVICE_NAME% >nul 2>&1
 if not errorlevel 1 (
     echo [1/4] Mevcut servis durduruluyor...
@@ -40,7 +35,6 @@ if not errorlevel 1 (
     echo [1/4] Onceden kurulu servis yok.
 )
 
-rem --- Yayinla (servers.json, history.db ve keys uzerine yazilmaz) ---
 echo [2/4] Uygulama yayinlaniyor...
 dotnet publish -c Release -o "%INSTALL_DIR%" --nologo -v q -p:CopyOutputSymbolsToPublishDirectory=false
 if errorlevel 1 (
@@ -49,26 +43,23 @@ if errorlevel 1 (
     exit /b 1
 )
 
-rem Ilk kurulumda mevcut sunucu listesini tasi; sonraki guncellemelerde dokunma.
 if not exist "%INSTALL_DIR%\servers.json.kurulu" (
     copy /y "servers.json" "%INSTALL_DIR%\servers.json" >nul
     echo. > "%INSTALL_DIR%\servers.json.kurulu"
 )
 
-rem --- Servisi olustur veya guncelle ---
+
 sc.exe query %SERVICE_NAME% >nul 2>&1
 if errorlevel 1 (
     echo [3/4] Servis olusturuluyor...
     sc.exe create %SERVICE_NAME% binPath= "\"%INSTALL_DIR%\ServerMonitor.exe\"" start= delayed-auto DisplayName= "Sunucu Durum Paneli" >nul
     sc.exe description %SERVICE_NAME% "Sunucularin ping, port, HTTP ve WMI ile izlenmesi" >nul
-    rem Cokerse 1 dk sonra yeniden baslat.
+
     sc.exe failure %SERVICE_NAME% reset= 86400 actions= restart/60000/restart/60000/restart/60000 >nul
 ) else (
     echo [3/4] Servis zaten var, guncelleniyor.
 )
 
-rem --- Guvenlik duvari ---
-rem Tum profiller (sunucu Public gorunse bile), ama sadece yerel alt agdan erisim.
 netsh advfirewall firewall delete rule name="ServerMonitor Panel" >nul 2>&1
 netsh advfirewall firewall add rule name="ServerMonitor Panel" dir=in action=allow protocol=TCP localport=5080 remoteip=localsubnet profile=any >nul
 

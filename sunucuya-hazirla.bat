@@ -3,11 +3,7 @@ chcp 65001 >nul
 setlocal
 title Sunucu için yayın paketi hazırla
 
-rem ================================================================
-rem  Bu dosyayı KENDİ makinende (192.168.2.140) çalıştır.
-rem  Sunucuya .NET kurmaya gerek kalmadan çalışacak "kendinden
-rem  çalışır" (self-contained) bir paket üretir ve zip'ler.
-rem ================================================================
+
 
 cd /d "%~dp0"
 
@@ -30,7 +26,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-rem Guncel sunucu listesini ve sunucu kurulum betigini pakete ekle
+
 copy /y "servers.json" "publish-sunucu\servers.json" >nul
 copy /y "sunucuda-kur.bat" "publish-sunucu\sunucuda-kur.bat" >nul
 

@@ -2,11 +2,6 @@ using Microsoft.Data.Sqlite;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// Değişiklik tespiti için "önceki durum" (baseline) anlık görüntülerini saklar.
-/// Her (cihaz, tür) için son görülen JSON durumu tutulur; ilk gözlemde uyarı üretilmez.
-/// history.db içinde ayrı bir tablo kullanır.
-/// </summary>
 public sealed class BaselineStore
 {
     private readonly string _connectionString;
@@ -38,7 +33,7 @@ public sealed class BaselineStore
         command.ExecuteNonQuery();
     }
 
-    /// <summary>Önceki JSON durumu; ilk kez ise null.</summary>
+
     public async Task<string?> GetAsync(string serverId, string kind, CancellationToken ct)
     {
         try

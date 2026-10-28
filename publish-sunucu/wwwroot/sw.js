@@ -1,11 +1,6 @@
 "use strict";
 
-/*
-  Service worker: yalnizca HTTPS (veya localhost) uzerinden calisir.
-  - API istekleri her zaman agdan gider, asla onbellekten sunulmaz (eski durum gostermemek icin).
-  - Statik dosyalar once agdan denenir, basarisizsa onbellekten verilir.
-  - Ag yoksa sayfa yerine kisa bir "baglanti yok" ekrani gosterilir.
-*/
+
 
 const CACHE = "server-monitor-v1";
 const SHELL = ["/app.js", "/style.css", "/icons/icon-192.png"];
@@ -30,7 +25,7 @@ self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE)
       .then(cache => cache.addAll(SHELL))
-      .catch(() => { /* ilk kurulumda onbellege alinamazsa sorun degil */ })
+      .catch(() => {  })
   );
   self.skipWaiting();
 });

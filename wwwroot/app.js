@@ -1,7 +1,7 @@
 "use strict";
 
-const POLL_MS = 5000;   // sunucudan durum cekme araligi
-const TICK_MS = 1000;   // "3 sn once" gibi goreli zamanlarin tazelenmesi
+const POLL_MS = 5000;   
+const TICK_MS = 1000;   
 
 const GAUGE_RADIUS = 26;
 const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_RADIUS;
@@ -30,7 +30,7 @@ const state = {
   openId: null,
   editingId: null,
   category: readCategory(),
-  groupFilter: ""   // seçili bölüm (boş = tümü)
+  groupFilter: ""   
 };
 
 function readCategory() {
@@ -42,10 +42,7 @@ function readCategory() {
   }
 }
 
-/**
- * Ekranda gosterilecek durum. Bilgisayarin kapali olmasi normaldir: agdan ulasilamayan
- * bir bilgisayar kirmizi "SORUNLU" degil gri "KAPALI" gosterilir.
- */
+
 function displayState(s) {
   return s.category === "Computer" && s.state === "Down" && s.online === false ? "Offline" : s.state;
 }
@@ -99,9 +96,6 @@ const dom = {
   wmiPassHint: el("wmiPassHint")
 };
 
-// =====================================================
-//  API
-// =====================================================
 
 async function api(path, options) {
   const res = await fetch(path, {
@@ -109,7 +103,7 @@ async function api(path, options) {
     ...options
   });
 
-  // Oturum dustuyse (veya giris yeni acildiysa) giris ekranina gec.
+  
   if (res.status === 401 && !path.startsWith("/api/auth")) {
     location.replace("/login.html");
     throw new Error("Oturum açmanız gerekiyor.");
@@ -120,7 +114,7 @@ async function api(path, options) {
     try {
       const body = await res.json();
       if (body && (body.message || body.detail)) message = body.message || body.detail;
-    } catch { /* gövde JSON değilse durum kodunu kullan */ }
+    } catch {  }
     throw new Error(message);
   }
 
@@ -135,9 +129,6 @@ function toast(message, isError) {
   toast._timer = setTimeout(() => { dom.toast.hidden = true; }, 4000);
 }
 
-// =====================================================
-//  Veri yükleme
-// =====================================================
 
 async function loadStatus() {
   try {
@@ -164,7 +155,7 @@ async function loadDefinitions() {
     const groups = [...new Set(state.definitions.map(d => d.group).filter(Boolean))];
     dom.groupList.innerHTML = groups.map(g => `<option value="${esc(g)}">`).join("");
 
-    // Tanımlar yenilenince pasif cihaz listesini de tazele.
+
     passiveSignature = "__reload__";
     renderDisabled();
   } catch (err) {
@@ -199,9 +190,7 @@ async function refreshOne(id) {
   }
 }
 
-// =====================================================
-//  Çizim
-// =====================================================
+
 
 function render() {
   updateGroupFilter();
@@ -212,7 +201,7 @@ function render() {
   if (state.openId) renderDrawer();
 }
 
-// --- Pasif (izleme dışı) cihazlar ---
+
 
 let passiveSignature = "";
 
@@ -229,7 +218,7 @@ function renderDisabled() {
       d.host.toLocaleLowerCase("tr").includes(term) ||
       (d.group || "").toLocaleLowerCase("tr").includes(term));
 
-  // Gereksiz yeniden çizimi önle (her poll'da değil, sadece liste/filtre değişince).
+
   const signature = state.category + "|" + state.groupFilter + "|" + term + "|" + disabled.map(d => d.id).join(",");
   if (signature === passiveSignature) return;
   passiveSignature = signature;
@@ -264,11 +253,11 @@ function passiveChipHtml(d) {
     </button>`;
 }
 
-// --- Özet + sağlık şeridi ---
+
 
 let animationSeq = 0;
 
-/** Sayacı eski değerden yenisine yumuşakça taşır. */
+
 function animateNumber(node, target) {
   const from = Number(node.dataset.value ?? 0);
   if (from === target) {
@@ -289,7 +278,7 @@ function animateNumber(node, target) {
   const duration = 450;
 
   const step = now => {
-    if (Number(node.dataset.anim) !== token) return;   // daha yeni bir animasyon devraldı
+    if (Number(node.dataset.anim) !== token) return;  
     const t = Math.min(1, (now - started) / duration);
     const eased = 1 - Math.pow(1 - t, 3);
     node.textContent = Math.round(from + (target - from) * eased);
@@ -299,42 +288,42 @@ function animateNumber(node, target) {
   requestAnimationFrame(step);
 }
 
-// Grup metnini "üst / alt" olarak ayırır. "Yerel / SSH", "Genel > DB" gibi yazımları destekler.
+
 function parseGroup(raw) {
   const g = (raw || "Genel").trim() || "Genel";
   const parts = g.split(/\s*[\/>]\s*/).map(p => p.trim()).filter(Boolean);
   return { top: parts[0] || "Genel", sub: parts.slice(1).join(" / ") };
 }
 
-// Grubu tek, düzgün bir metne çevirir ("Yerel / SSH").
+
 function normGroup(raw) {
   const { top, sub } = parseGroup(raw);
   return sub ? `${top} / ${sub}` : top;
 }
 
-// Seçili bölüm filtresi bu grubu kapsıyor mu? Üst seviye seçiliyse altları da kapsar.
+
 function matchesGroupFilter(groupStr) {
   if (!state.groupFilter) return true;
   const sel = state.groupFilter;
-  if (/[\/>]/.test(sel)) return normGroup(groupStr) === normGroup(sel);   // tam alt grup
-  return parseGroup(groupStr).top === sel;                                // üst seviye: hepsi
+  if (/[\/>]/.test(sel)) return normGroup(groupStr) === normGroup(sel);  
+  return parseGroup(groupStr).top === sel;                              
 }
 
-/** Secili kategori VE bölüme ait cihazlar, aramadan bagimsiz. */
+
 function categoryServers() {
   return state.servers.filter(s =>
     (state.category === "all" || (s.category || "Server") === state.category) &&
     matchesGroupFilter(s.group));
 }
 
-/** Bölüm (grup) açılır listesini mevcut gruplardan doldurur. */
+
 let groupFilterSig = "";
 
 function updateGroupFilter() {
   const select = el("groupFilter");
   if (!select) return;
 
-  // Üst grup -> alt gruplar haritası.
+
   const tops = new Map();
   for (const s of [...(state.servers || []), ...(state.definitions || [])]) {
     if (!s.group) continue;
@@ -349,10 +338,10 @@ function updateGroupFilter() {
     for (const sub of tops.get(top)) allValues.push(`${top} / ${sub}`);
   }
 
-  // Seçili değer artık yoksa sıfırla.
+
   if (state.groupFilter && !allValues.includes(state.groupFilter)) state.groupFilter = "";
 
-  // Açık bir dropdown'ı bozmamak için yalnızca liste değişince yeniden kur.
+ 
   const sig = state.groupFilter + "|" + allValues.join(",");
   if (sig === groupFilterSig) return;
   groupFilterSig = sig;
@@ -387,14 +376,14 @@ function renderSummary() {
 
   renderCategoryTabs();
 
-  // Canlilik noktasi ve arka plan tonu, secili sekmeden bagimsiz genel duruma gore.
+
   const all = computeSummary(state.servers);
   const worst = all.down > 0 ? "Down" : all.warning > 0 ? "Warning" : "Up";
 
   const dot = document.querySelector(".brand-dot");
   if (dot) dot.className = "brand-dot state-" + worst;
 
-  // Arka plan aurorası duruma göre renk alır (kırmızı/sarı/sakin).
+
   if (document.body.dataset.health !== worst) document.body.dataset.health = worst;
 
   if (!dom.healthBar) return;
@@ -433,13 +422,13 @@ function renderCategoryTabs() {
 
 function selectCategory(category) {
   state.category = category;
-  try { localStorage.setItem(CATEGORY_KEY, category); } catch { /* yok say */ }
+  try { localStorage.setItem(CATEGORY_KEY, category); } catch {  }
   renderSummary();
   renderCards();
   renderDisabled();
 }
 
-// --- Kartlar (yerinde güncellenir, her turda yeniden yaratılmaz) ---
+
 
 const cardNodes = new Map();
 let layoutSignature = "";
@@ -455,10 +444,9 @@ function visibleServers() {
     (s.group || "").toLocaleLowerCase("tr").includes(term));
 }
 
-// İki seviyeli gruplama: üst grup -> alt grup -> cihaz listesi.
 function groupServers(servers) {
   const order = { Down: 0, Warning: 1, Unknown: 2, Up: 3, Offline: 4 };
-  const tops = new Map();   // Map<top, Map<sub, list>>
+  const tops = new Map();   
 
   for (const server of servers) {
     const { top, sub } = parseGroup(server.group);
@@ -476,7 +464,7 @@ function groupServers(servers) {
   return tops;
 }
 
-// Alt gruplar sıralı; "alt grupsuz" (boş) önce gelir.
+
 function sortedSubKeys(subs) {
   return [...subs.keys()].sort((a, b) => (a === "" ? -1 : b === "" ? 1 : a.localeCompare(b, "tr")));
 }
@@ -504,7 +492,7 @@ function renderCards() {
       sortedSubKeys(subs).map(sub => sub + ">" + subs.get(sub).map(s => s.id).join(",")).join(";"))
     .join("|");
 
-  // Yalnizca kart kumesi veya sirasi degistiyse iskeleti yeniden kur.
+
   if (signature !== layoutSignature) {
     buildLayout(groups);
     layoutSignature = signature;
@@ -592,7 +580,7 @@ function createCard(server, position) {
       <span class="foot-hint">grafikler için tıkla →</span>
     </div>`;
 
-  // Giris animasyonu bir kez oynasin; kart sonradan tasinsa bile tekrarlanmasin.
+
   root.addEventListener("animationend", () => root.classList.remove("card-enter"), { once: true });
   root.addEventListener("click", () => openDrawer(server.id));
 
@@ -634,7 +622,7 @@ function updateCard(server, node) {
   setText(refs.host, server.host);
 
   if (shown === "Offline") {
-    // Kapali bilgisayarda bos halkalar ve "erisilemedi" hatalari yerine tek, sakin bir satir.
+
     updateGauges(refs.gauges, null);
     setHtml(refs.checks, `<div class="offline-note">Cihaz kapalı veya ağda değil${lastSeenText(server)}</div>`);
     setHtml(refs.driveLine, "");
@@ -652,7 +640,7 @@ function updateCard(server, node) {
   setText(refs.uptime, "%" + (server.uptimePercent ?? 0) + (category === "Computer" ? " açık" : " uptime"));
 }
 
-/** " · son açık: 2 sa önce" — geçmişteki son erişilebilir ölçümden. */
+
 function lastSeenText(server) {
   const lastOnline = [...(server.history || [])].reverse().find(p => p.state !== "Down");
   const when = lastOnline?.timestampUtc || server.lastUpUtc;
@@ -675,8 +663,6 @@ function checkRowHtml(c) {
       <span class="check-msg">${esc(c.message || "")}</span>
     </div>`;
 }
-
-// --- Halka göstergeler ---
 
 function gaugeSpecs(metrics) {
   if (!metrics) return [];
@@ -711,10 +697,7 @@ function gaugeSpecs(metrics) {
   return specs;
 }
 
-/**
- * Halkalari gunceller. animate=false, kabi her turda yeniden yaratilan yerlerde
- * (cekmece) kullanilir; yoksa halkalar her 5 saniyede sifirdan dolar gibi gorunur.
- */
+
 function updateGauges(container, metrics, animate = true) {
   const specs = gaugeSpecs(metrics);
   const signature = specs.map(s => s.key).join("|");
@@ -724,7 +707,7 @@ function updateGauges(container, metrics, animate = true) {
     container.innerHTML = specs.map(gaugeMarkup).join("");
 
     if (animate) {
-      // Halkalar sifirdan baslar; degeri bir sonraki karede verince dolarak acilir.
+
       requestAnimationFrame(() => applyGaugeValues(container, specs));
       return;
     }
@@ -767,7 +750,7 @@ function applyGaugeValues(container, specs) {
 
 const thresholdColor = p => (p >= 95 ? "var(--down)" : p >= 85 ? "var(--warn)" : "var(--up)");
 
-/** Halkada gösterilmeyen diğer sürücüleri tek satırda özetler. */
+
 function driveLineHtml(metrics) {
   const drives = metrics?.drives || [];
   const error = metrics?.error ? `<div class="error-note">${esc(metrics.error)}</div>` : "";
@@ -778,7 +761,7 @@ function driveLineHtml(metrics) {
   return `<div class="drive-summary">${esc(text)}</div>` + error;
 }
 
-/** Kart üzerinde yanıt süresinin son seyri. */
+
 function miniResponseHtml(history) {
   const points = (history || []).map(p => (isNum(p.responseMs) ? p.responseMs : null));
   const values = points.filter(isNum);
@@ -814,7 +797,7 @@ function miniResponseHtml(history) {
 function sparkHtml(history, category) {
   if (!history || history.length < 2) return "";
 
-  // Bilgisayarda "erisilemedi" buyuk olasilikla "kapaliydi" demektir; kirmizi yerine gri.
+
   const stateOf = p => (category === "Computer" && p.state === "Down" ? "Offline" : p.state);
 
   return '<div class="spark">' + history.slice(-40).map(p =>
@@ -827,17 +810,13 @@ function renderFooter() {
     : "Henüz kontrol yapılmadı.";
 }
 
-/** Poll beklemeden "3 sn önce" yazılarını canlı tutar. */
+
 function tickRelativeTimes() {
   for (const server of state.servers) {
     const node = cardNodes.get(server.id);
     if (node) setText(node.refs.time, lastCheckText(server));
   }
 }
-
-// =====================================================
-//  Büyük grafikler (bağımlılık yok, saf SVG)
-// =====================================================
 
 function lineChart(points, opts) {
   const W = 620, H = 150, PAD_L = 40, PAD_R = 10, PAD_T = 12, PAD_B = 20;
@@ -925,15 +904,12 @@ function chartBlock(title, points, opts) {
     </div>`;
 }
 
-// =====================================================
-//  Detay çekmecesi
-// =====================================================
+
 
 function openDrawer(id) {
   state.openId = id;
 
-  // Canli bolum her poll'da yeniden cizilir; uygulama listesi kendi zamanlayicisiyla ayri
-  // bir kapta yasar ki 5 saniyede bir silinip yeniden yuklenmesin.
+
   const server = state.servers.find(x => x.id === id);
   const isComputer = server?.category === "Computer";
   dom.drawerBody.innerHTML = isComputer
@@ -947,7 +923,6 @@ function openDrawer(id) {
   renderDrawer();
   startAppsPolling();
 
-  // Künye, programlar ve USB: sık değişmez, o yüzden 15 sn'lik döngüde değil, açılışta bir kez.
   loadInfo();
   if (isComputer) {
     loadPrograms();
@@ -1027,7 +1002,7 @@ function renderDrawer() {
   dom.drawerBody.scrollTop = scroll;
 }
 
-// --- Çalışan uygulamalar ---
+
 
 const APPS_REFRESH_MS = 15000;
 let appsTimer = null;
@@ -1044,10 +1019,10 @@ function startAppsPolling() {
 function stopAppsPolling() {
   if (appsTimer) clearInterval(appsTimer);
   appsTimer = null;
-  appsRequestSeq++; // yolda olan istegin sonucunu yok say
+  appsRequestSeq++; 
 }
 
-// --- En çok erişilen alan adları (DC DNS günlüğünden) ---
+
 
 let dnsShowAll = false;
 
@@ -1063,14 +1038,14 @@ async function loadDns() {
     ]);
     if (state.openId !== id) return;
 
-    // DC toplayicisi hic kurulmamissa bolumu hic gosterme.
+
     if (!data.hasStore) { container.innerHTML = ""; return; }
 
     const ignoredSet = new Set((lists.ignored || []).map(x => x.toLowerCase()));
     const domains = data.domains || [];
     const meta = data.windowMinutes ? `· son ${Math.round(data.windowMinutes / 60) || 1} sa` : "";
 
-    // "Filtresiz göster" anahtarı: gürültü (telemetri/CDN/OS) dahil her şeyi listeler.
+
     const toggle = `
       <label class="toggle dns-toggle">
         <input type="checkbox" id="dnsAll" ${dnsShowAll ? "checked" : ""}>
@@ -1102,7 +1077,7 @@ async function loadDns() {
     const max = domains[0].count || 1;
     const rows = domains.map(d => {
       const hidden = ignoredSet.has(d.domain.toLowerCase());
-      // Gizliyse "geri al", değilse "gizle".
+ 
       const btn = hidden
         ? `<button type="button" class="dns-act show" data-show="${esc(d.domain)}" title="Tekrar göster">geri al</button>`
         : `<button type="button" class="dns-act hide" data-hide="${esc(d.domain)}" title="Bu alan adını listeden gizle">gizle</button>`;
@@ -1133,7 +1108,7 @@ async function loadDns() {
   }
 }
 
-// Bir alan adını gizle (true) veya tekrar göster (false). Anında geçerli, yeniden başlatma yok.
+
 async function setDomainHidden(domain, hide) {
   try {
     await api(hide ? "/api/dns/ignore" : "/api/dns/unignore", {
@@ -1141,14 +1116,14 @@ async function setDomainHidden(domain, hide) {
       body: JSON.stringify({ domain })
     });
     toast(hide ? `"${domain}" gizlendi.` : `"${domain}" tekrar gösteriliyor.`);
-    loadDns();            // açık çekmecedeki listeyi tazele (kapalıysa sessizce döner)
-    loadDnsHiddenList();  // ayarlardaki yönetim listesini tazele (kapalıysa sessizce döner)
+    loadDns();            
+    loadDnsHiddenList();  
   } catch (err) {
     toast("İşlem başarısız: " + err.message, true);
   }
 }
 
-// Ayarlar → DNS/Ağ sekmesindeki "Gizlenen alan adları" yönetim listesi.
+
 async function loadDnsHiddenList() {
   const box = el("dnsHiddenList");
   if (!box) return;
@@ -1169,7 +1144,7 @@ async function loadDnsHiddenList() {
   }
 }
 
-// --- Cihaz künye bilgileri ---
+
 
 let infoSeq = 0;
 
@@ -1178,7 +1153,7 @@ async function loadInfo() {
   const container = el("drawerInfo");
   if (!id || !container) return;
 
-  // WMI kapalıysa künye çekilemez; bölümü gösterme.
+ 
   const def = state.definitions.find(d => d.id === id);
   if (!def?.windowsMetrics?.enabled) { container.innerHTML = ""; return; }
 
@@ -1248,7 +1223,7 @@ async function loadInfo() {
   }
 }
 
-// --- Kurulu programlar ---
+
 
 let programsSeq = 0;
 let programsFilter = "";
@@ -1311,7 +1286,7 @@ function renderPrograms(data) {
   }
 }
 
-// --- USB depolama aygıtları ---
+
 
 let usbSeq = 0;
 
@@ -1338,14 +1313,14 @@ async function loadUsb() {
     const rows = devices.map(d => {
       const size = isNum(d.sizeBytes) ? bytes(d.sizeBytes) : "";
 
-      // Takılıysa "TAKILI"; değilse önce çıkarma tarihi, yoksa son bağlanma.
+     
       const when = d.connected
         ? "TAKILI"
         : d.lastRemovedUtc ? "çıkarıldı: " + relativeTime(d.lastRemovedUtc)
         : d.lastConnectedUtc ? "son bağlanma: " + relativeTime(d.lastConnectedUtc)
         : "tarih yok";
 
-      // Alt satırda seri + varsa ilk/son bağlanma detayları
+      
       const detail = [
         d.serial ? "Seri: " + d.serial : "",
         d.lastConnectedUtc && !d.connected ? "bağlanma: " + new Date(d.lastConnectedUtc).toLocaleString("tr-TR") : ""
@@ -1478,9 +1453,6 @@ function barRow(name, percent, detail) {
     </div>`;
 }
 
-// =====================================================
-//  Form: satır kurucuları
-// =====================================================
 
 function portRow(data) {
   const d = data || {};
@@ -1509,9 +1481,6 @@ function httpRow(data) {
   return row;
 }
 
-// =====================================================
-//  Form: aç / doldur / kaydet
-// =====================================================
 
 function openForm(definition) {
   state.editingId = definition?.id || null;
@@ -1522,7 +1491,7 @@ function openForm(definition) {
   el("fName").value = definition?.name || "";
   el("fHost").value = definition?.host || "";
   el("fGroup").value = definition?.group || "";
-  // Yeni kayitta tur, o an secili sekmeden gelsin.
+
   el("fCategory").value = definition?.category || (state.category === "Computer" ? "Computer" : "Server");
   el("fEnabled").checked = definition ? definition.enabled !== false : true;
 
@@ -1593,7 +1562,7 @@ function collectForm() {
     },
     ports,
     http,
-    // Metrikler kapalıyken de nesneyi gönderiyoruz ki kayıtlı parola kaybolmasın.
+
     windowsMetrics: {
       enabled: el("fWmiEnabled").checked,
       username: el("fWmiUser").value.trim() || null,
@@ -1604,7 +1573,7 @@ function collectForm() {
     }
   };
 
-  // Parola yalnızca gerçekten yazıldıysa gönderilir; boşsa sunucu eskisini korur.
+
   const password = el("fWmiPass").value;
   if (password) payload.windowsMetrics.password = password;
 
@@ -1657,10 +1626,10 @@ async function deleteServer() {
     closeForm();
     closeDrawer();
 
-    // Arka plandaki izleme turunu beklemeden ekrandan hemen kaldir (iyimser guncelleme).
+  
     state.servers = state.servers.filter(s => s.id !== deletedId);
     state.definitions = state.definitions.filter(d => d.id !== deletedId);
-    layoutSignature = "";       // kart iskeletini yeniden kur
+    layoutSignature = "";       
     passiveSignature = "__reload__";
     render();
 
@@ -1676,7 +1645,7 @@ async function saveInterval() {
   if (!seconds || seconds < 5) return;
 
   try {
-    // Diger ayarlari ezmemek icin once mevcut halini alip sadece araligi degistiriyoruz.
+ 
     const current = await api("/api/settings");
     const settings = await api("/api/settings", {
       method: "PUT",
@@ -1690,9 +1659,6 @@ async function saveInterval() {
   }
 }
 
-// =====================================================
-//  Ayarlar penceresi
-// =====================================================
 
 function openSettings(tab) {
   dom.settingsModal.hidden = false;
@@ -1725,7 +1691,7 @@ async function loadDnsConfig() {
 
     const taskNode = el("dnsCmdTask");
     if (taskNode) {
-      // DC'de calisacak: 15 dakikada bir toplayiciyi tetikleyen zamanlanmis gorev.
+   
       taskNode.textContent =
         `schtasks /create /tn "DNS Toplayici" /sc minute /mo 15 /ru SYSTEM /rl HIGHEST /f ` +
         `/tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\dns-toplayici.ps1 ` +
@@ -1762,7 +1728,7 @@ async function withBusy(button, work) {
   }
 }
 
-// --- Genel ---
+
 
 async function loadGeneralSettings() {
   try {
@@ -1800,7 +1766,7 @@ async function saveGeneralSettings(event) {
   });
 }
 
-// --- Bildirim ---
+
 
 async function loadNotificationSettings() {
   try {
@@ -1862,7 +1828,7 @@ function collectNotificationSettings() {
     }
   };
 
-  // Parola yalnizca yazildiysa gonderilir; bossa sunucu eskisini korur.
+
   const password = el("ePass").value;
   if (password) payload.email.password = password;
 
@@ -1889,7 +1855,7 @@ async function sendTestNotification() {
 
   await withBusy(el("notifyTest"), async () => {
     try {
-      // Test, formdaki son hali denesin diye once kaydediyoruz.
+
       await api("/api/notifications", { method: "PUT", body: JSON.stringify(collectNotificationSettings()) });
       const result = await api("/api/notifications/test", { method: "POST" });
       toast(result.message);
@@ -1899,7 +1865,6 @@ async function sendTestNotification() {
   });
 }
 
-// --- Güvenlik ---
 
 async function loadSecuritySettings() {
   try {
@@ -1932,7 +1897,7 @@ async function saveSecuritySettings(event) {
       });
 
       if (enabled) {
-        // Yeni bilgilerle oturum ac ki kendini disarida birakma.
+
         if (password) {
           await api("/api/auth/login", {
             method: "POST",
@@ -1960,7 +1925,7 @@ async function loadAuthState() {
       dom.logoutBtn.title = s.enabled ? s.username + " olarak giriş yapıldı" : "";
     }
   } catch {
-    /* durum okunamazsa cikis dugmesini gizli birak */
+
   }
 }
 
@@ -1972,7 +1937,7 @@ async function logout() {
   }
 }
 
-// --- Uptime raporu ---
+
 
 async function loadUptimeReport() {
   const body = el("reportBody");
@@ -2011,9 +1976,7 @@ async function loadUptimeReport() {
   }
 }
 
-// =====================================================
-//  Tema
-// =====================================================
+
 
 const THEME_KEY = "serverMonitorTheme";
 const THEME_ORDER = ["auto", "light", "dark"];
@@ -2040,13 +2003,11 @@ function readTheme() {
 
 function cycleTheme() {
   const next = THEME_ORDER[(THEME_ORDER.indexOf(readTheme()) + 1) % THEME_ORDER.length];
-  try { localStorage.setItem(THEME_KEY, next); } catch { /* kaydedemesek de uygula */ }
+  try { localStorage.setItem(THEME_KEY, next); } catch {  }
   applyTheme(next);
 }
 
-// =====================================================
-//  Yardımcılar
-// =====================================================
+
 
 const isNum = v => typeof v === "number" && isFinite(v);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -2087,7 +2048,7 @@ function bytes(value) {
   return v.toFixed(v >= 100 || i === 0 ? 0 : 1) + " " + units[i];
 }
 
-// .NET TimeSpan "d.hh:mm:ss" veya "hh:mm:ss" biçiminde gelir.
+
 function uptimeText(ts) {
   const match = /^(?:(\d+)\.)?(\d{2}):(\d{2}):(\d{2})/.exec(ts);
   if (!match) return ts;
@@ -2104,9 +2065,7 @@ function esc(value) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
 
-// =====================================================
-//  Olaylar ve başlangıç
-// =====================================================
+
 
 function startPolling() {
   stopPolling();
@@ -2146,7 +2105,6 @@ el("dnsHideInput")?.addEventListener("keydown", e => {
   if (e.key === "Enter") { e.preventDefault(); el("dnsHideAdd")?.click(); }
 });
 
-// Kod kopyalama düğmeleri (DNS sekmesi)
 dom.settingsModal?.addEventListener("click", event => {
   const button = event.target.closest("[data-copy]");
   if (!button) return;
@@ -2169,7 +2127,6 @@ el("groupFilter")?.addEventListener("change", e => {
 
 el("pdfBtn")?.addEventListener("click", () => window.print());
 
-// Yazdırma/PDF başlığını o anki kapsamla doldur.
 window.addEventListener("beforeprint", () => {
   const header = el("printHeader");
   if (!header) return;
@@ -2187,7 +2144,7 @@ el("wordBtn")?.addEventListener("click", () => {
   const params = new URLSearchParams();
   if (state.category && state.category !== "all") params.set("category", state.category);
   if (state.groupFilter) params.set("group", state.groupFilter);
-  // Tarayıcı Content-Disposition ile dosyayı indirir; oturum çerezi otomatik gider.
+
   window.location.href = "/api/report/word" + (params.toString() ? "?" + params : "");
 });
 dom.interval.addEventListener("change", saveInterval);
@@ -2229,14 +2186,11 @@ document.addEventListener("visibilitychange", () => {
   else if (dom.autoRefresh.checked) { loadStatus(); startPolling(); }
 });
 
-// =====================================================
-//  Telefona kurulum (PWA)
-// =====================================================
 
 const isStandalone = () =>
   window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
-// iPadOS kendini Mac olarak tanitir; dokunmatik nokta sayisindan ayirt ediyoruz.
+
 const isIos = () =>
   /iphone|ipad|ipod/i.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -2244,7 +2198,7 @@ const isIos = () =>
 function initPwa() {
   if (isStandalone()) document.documentElement.classList.add("standalone");
 
-  // Service worker yalnizca HTTPS'te (veya localhost'ta) kaydedilebilir.
+
   if ("serviceWorker" in navigator && window.isSecureContext) {
     navigator.serviceWorker.register("/sw.js").catch(err => console.warn("Service worker kaydedilemedi:", err));
   }
@@ -2253,13 +2207,13 @@ function initPwa() {
   if (!hint) return;
 
   let dismissed = false;
-  try { dismissed = localStorage.getItem("installHintDismissed") === "1"; } catch { /* yok say */ }
+  try { dismissed = localStorage.getItem("installHintDismissed") === "1"; } catch {  }
 
   if (isIos() && !isStandalone() && !dismissed) hint.hidden = false;
 
   el("installHintClose")?.addEventListener("click", () => {
     hint.hidden = true;
-    try { localStorage.setItem("installHintDismissed", "1"); } catch { /* yok say */ }
+    try { localStorage.setItem("installHintDismissed", "1"); } catch {  }
   });
 }
 

@@ -5,11 +5,7 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// DC'deki toplayicidan gelen DNS ozetlerini istemci IP'si basina "alan adi -> sayi" olarak tutar.
-/// Hem bellekte (hizli), hem history.db'de (kalici) — panel yeniden baslayinca liste kaybolmaz.
-/// Sadece alan adlari sayilir; tam URL, sayfa icerigi veya sorgu zamani saklanmaz.
-/// </summary>
+
 public sealed class DnsInsightStore
 {
     private sealed record Bucket(DateTimeOffset UpdatedUtc, int WindowMinutes, IReadOnlyDictionary<string, int> Domains);
@@ -102,38 +98,30 @@ public sealed class DnsInsightStore
         }
     }
 
-    // =====================================================
-    //  Gürültü filtresi
-    //  Kullanicinin girmedigi halde surekli konusulan alan adlari: isletim sistemi telemetrisi,
-    //  antivirus, guncelleme, CDN ve sitelere gomulu analitik servisler. Bunlar listede gosterilmez.
-    //  Ambivalan olanlar (google.com, youtube.com, facebook.com gibi kullanicinin da girebilecegi
-    //  yerler) BILEREK listede tutulmadi.
-    // =====================================================
 
-    /// <summary>Tam (eTLD+1) eslesme ile elenen alan adlari.</summary>
     private static readonly HashSet<string> BuiltInIgnore = new(StringComparer.OrdinalIgnoreCase)
     {
-        // Microsoft / Windows arka plan
+
         "microsoft.com", "msn.com", "bing.com", "windows.com", "windowsupdate.com", "update.microsoft.com",
         "live.com", "office.com", "office365.com", "office.net", "microsoftonline.com", "msftconnecttest.com",
         "msftncsi.com", "windows.net", "msedge.net", "microsoftstore.com", "s-microsoft.com", "sfx.ms",
         "msocdn.com", "microsoft-falcon.io", "skype.com", "msftauth.net", "azureedge.net", "azure.com",
         "windowsazure.com", "trafficmanager.net", "aadcdn.microsoftonline-p.com",
-        // Antivirus / guvenlik
+
         "bitdefender.com", "bitdefender.net", "nsatc.net",
-        // Baglanti / DNS kontrolleri
+
         "dns.google", "one.one.one.one", "gvt1.com", "gvt2.com",
-        // Yaygin CDN / altyapi (kullaniciya gorunmez)
+
         "gstatic.com", "googleapis.com", "ytimg.com", "googleusercontent.com", "google-analytics.com",
         "googletagmanager.com", "doubleclick.net", "g.doubleclick.net", "fbcdn.net", "akamai.net",
         "akamaized.net", "akamaiedge.net", "edgekey.net", "edgesuite.net", "cloudfront.net", "fastly.net",
         "fastly-edge.com", "jsdelivr.net", "cdn.jsdelivr.net", "unpkg.com", "cloudflare.com", "cloudflare-dns.com",
         "llnwd.net", "cdn77.org", "cedexis.net", "demdex.net", "adsrvr.org",
-        // Uygulama telemetri / arka plan senkron
+
         "whatsapp.net", "sfbassets.com", "office.live.com", "aria.microsoft.com",
     };
 
-    /// <summary>Alan adi bu parcalardan birini iceriyorsa elenir (bolgesel telemetri adresleri icin).</summary>
+
     private static readonly string[] IgnoreKeywords =
     {
         "datadoghq", "sentry", "crashlytics", "bugsnag", "newrelic", "clarity.ms", "scorecardresearch",
@@ -143,7 +131,7 @@ public sealed class DnsInsightStore
 
     private static bool IsNoise(string domain, ISet<string> extraIgnore, ISet<string> allowed)
     {
-        // Kullanicinin acikca "her zaman goster" dedikleri filtreye takilmaz.
+
         if (allowed.Contains(domain))
             return false;
 
@@ -157,7 +145,7 @@ public sealed class DnsInsightStore
         return false;
     }
 
-    /// <summary>Toplayicidan gelen paketi isler. Her IP icin o pencerenin tam ozeti geldigi varsayilir (uzerine yazilir).</summary>
+
     public void Ingest(DnsIngest packet)
     {
         var now = DateTimeOffset.UtcNow;
@@ -174,14 +162,11 @@ public sealed class DnsInsightStore
 
             var bucket = new Bucket(now, packet.WindowMinutes, domains);
             _byClientIp[group.Key] = bucket;
-            Persist(group.Key, bucket);   // kalıcı: panel yeniden başlayınca kaybolmasın
+            Persist(group.Key, bucket);   
         }
     }
 
-    /// <summary>
-    /// Verilen IP'lere ait alan adlarini birlestirip en cok erisilenleri doner.
-    /// applyFilter=false ise gurultu filtresi uygulanmaz (her sey gosterilir).
-    /// </summary>
+
     public (DateTimeOffset? UpdatedUtc, int WindowMinutes, List<DnsDomainHit> Top) Query(
         IEnumerable<string> clientIps, int take,
         IEnumerable<string>? extraIgnore = null, IEnumerable<string>? allowed = null, bool applyFilter = true)
@@ -220,7 +205,7 @@ public sealed class DnsInsightStore
         return (updated, window, top);
     }
 
-    /// <summary>Panelin genel ozeti icin: tum IP'ler birlestirilmis en cok erisilen adlar.</summary>
+
     public (DateTimeOffset? UpdatedUtc, List<DnsDomainHit> Top) QueryAll(int take, IEnumerable<string>? extraIgnore = null)
     {
         var (updated, _, top) = Query(_byClientIp.Keys.ToList(), take, extraIgnore);

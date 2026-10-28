@@ -206,9 +206,3 @@ ServerMonitor/
 └─ wwwroot/              → dashboard (HTML/CSS/JS, saf SVG grafikler)
 ```
 
-## Sonraki adımlar (istersen ekleyebiliriz)
-
-- Sorun anında e-posta / Teams / Slack bildirimi
-- Geçmişi SQLite'a yazıp yeniden başlatmalara dayanıklı grafikler
-- SQL Server bağlantı kontrolü, Windows servis durumu kontrolü
-- Panele giriş ekranı (Windows Authentication veya API key)

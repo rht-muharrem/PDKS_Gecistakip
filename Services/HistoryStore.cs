@@ -4,16 +4,13 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// Olcumleri history.db (SQLite) dosyasina yazar. Uygulama yeniden baslayinca grafikler
-/// buradan doldurulur; uzun donem uptime raporlari da buradan hesaplanir.
-/// </summary>
+
 public sealed class HistoryStore
 {
     private readonly string _connectionString;
     private readonly ILogger<HistoryStore> _logger;
 
-    // SQLite ayni anda tek yaziciya izin verir; yazmalari siraya sokuyoruz.
+ 
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     public HistoryStore(IHostEnvironment env, ILogger<HistoryStore> logger)
@@ -74,7 +71,7 @@ public sealed class HistoryStore
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Diske yazilamamasi izlemeyi durdurmamali.
+  
             _logger.LogError(ex, "Olcum veritabanina yazilamadi: {Server}", serverId);
         }
         finally
@@ -83,7 +80,7 @@ public sealed class HistoryStore
         }
     }
 
-    /// <summary>Son N olcumu eskiden yeniye sirali doner.</summary>
+
     public async Task<List<HistoryPoint>> LoadRecentAsync(string serverId, int limit, CancellationToken ct)
     {
         const string sql = """
@@ -107,7 +104,7 @@ public sealed class HistoryStore
         return await QueryAsync(sql, ct, ("$id", serverId), ("$since", FormatTs(sinceUtc)));
     }
 
-    /// <summary>Verilen tarihten bu yana sunucu basina toplam/saglikli olcum sayisi.</summary>
+
     public async Task<Dictionary<string, (int Total, int Healthy)>> GetUptimeAsync(DateTimeOffset sinceUtc, CancellationToken ct)
     {
         var result = new Dictionary<string, (int, int)>(StringComparer.OrdinalIgnoreCase);
@@ -231,7 +228,7 @@ public sealed class HistoryStore
         return points;
     }
 
-    // Sabit uzunluklu ISO 8601 (UTC): metin olarak siralama = zaman siralamasi.
+  
     private static string FormatTs(DateTimeOffset value) =>
         value.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture);
 }

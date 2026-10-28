@@ -3,7 +3,7 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>Son kontrol sonuclarini bellekte tutar (uygulama yeniden baslayinca sifirlanir).</summary>
+
 public sealed class StatusStore
 {
     private readonly ConcurrentDictionary<string, ServerStatus> _statuses = new(StringComparer.OrdinalIgnoreCase);
@@ -27,7 +27,6 @@ public sealed class StatusStore
 
     public bool Remove(string id) => _statuses.TryRemove(id, out _);
 
-    /// <summary>Konfigurasyondan silinen sunuculari bellekten dusur.</summary>
     public void RetainOnly(IEnumerable<string> ids)
     {
         var keep = new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase);

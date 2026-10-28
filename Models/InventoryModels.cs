@@ -1,6 +1,5 @@
 namespace ServerMonitor.Models;
 
-/// <summary>Bir cihazda kurulu bir program (registry Uninstall anahtarindan).</summary>
 public sealed record InstalledProgram
 {
     public required string Name { get; init; }
@@ -8,7 +7,6 @@ public sealed record InstalledProgram
     public string? Publisher { get; init; }
     public DateTimeOffset? InstallDate { get; init; }
 
-    /// <summary>64-bit Windows'ta 32-bit uygulama mi (WOW6432Node).</summary>
     public bool Is32Bit { get; init; }
 }
 
@@ -18,14 +16,14 @@ public sealed record InstalledProgramsResult
     public string? Error { get; init; }
 }
 
-/// <summary>Cihaza takilmis (veya takili) bir USB depolama aygiti.</summary>
+
 public sealed record UsbDevice
 {
     public required string Name { get; init; }
     public string? Serial { get; init; }
     public long? SizeBytes { get; init; }
 
-    /// <summary>Su anda takili mi.</summary>
+
     public bool Connected { get; init; }
 
     public DateTimeOffset? FirstConnectedUtc { get; init; }
@@ -64,7 +62,7 @@ public sealed record PrinterInfo
     public bool Offline { get; init; }
 }
 
-/// <summary>Cihazin kunye bilgileri (WMI'den).</summary>
+
 public sealed record DeviceInfo
 {
     public string? Hostname { get; init; }

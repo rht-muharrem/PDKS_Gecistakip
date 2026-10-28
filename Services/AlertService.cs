@@ -8,12 +8,6 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// Her turun sonuclarina bakip durum gecislerinde bildirim gonderir:
-/// - Sunucu FailureThreshold tur ust uste SORUNLU olursa bir kez "sorun" bildirimi
-/// - Sonra tekrar ayaga kalkarsa bir kez "duzeldi" bildirimi
-/// Sorun surdukce tekrar tekrar mesaj atilmaz.
-/// </summary>
 public sealed class AlertService
 {
     private sealed class AlertState
@@ -23,7 +17,7 @@ public sealed class AlertService
         public DateTimeOffset? DownSince;
     }
 
-    /// <summary>Konu, duz metin (webhook ve HTML gostermeyen istemciler) ve HTML govde.</summary>
+
     private sealed record AlertMessage(string Subject, string Text, string Html);
 
     private readonly ServerRepository _repository;
@@ -50,7 +44,7 @@ public sealed class AlertService
 
         foreach (var status in results)
         {
-            // Bilgisayarlarin kapanmasi normal; ayar acik degilse hic takip etme.
+  
             if (status.Category == DeviceCategory.Computer && !options.NotifyComputers)
             {
                 _states.TryRemove(status.Id, out _);
@@ -86,14 +80,13 @@ public sealed class AlertService
 
     public void Forget(string serverId) => _states.TryRemove(serverId, out _);
 
-    /// <summary>Panelden "test gonder" icin. Hatalari toplayip doner.</summary>
+
     public async Task<List<string>> SendTestAsync(CancellationToken ct)
     {
         var options = _repository.GetNotifications();
         return await SendAsync(options, BuildTestMessage(), ct);
     }
 
-    /// <summary>Bir cihazda tespit edilen degisiklikleri bildirir (antivirüs/program/USB).</summary>
     public async Task SendChangeAlertAsync(string name, string host, IReadOnlyList<string> changes, CancellationToken ct)
     {
         var options = _repository.GetNotifications();
@@ -128,9 +121,7 @@ public sealed class AlertService
                    $"{name} cihazında {changes.Count} değişiklik"));
     }
 
-    // =====================================================
-    //  Mesaj icerikleri
-    // =====================================================
+
 
     private static readonly string ColorDown = "#e5484d";
     private static readonly string ColorUp = "#2ea043";
@@ -234,11 +225,7 @@ public sealed class AlertService
                    "Sunucu Durum Paneli test e-postası"));
     }
 
-    // =====================================================
-    //  HTML sablon parcalari
-    //  E-posta istemcileri (ozellikle Outlook masaustu) modern CSS desteklemez:
-    //  tablo duzeni, satir ici stil ve bgcolor kullaniliyor.
-    // =====================================================
+
 
     private const string Font = "'Segoe UI',Arial,Helvetica,sans-serif";
 
@@ -323,7 +310,7 @@ public sealed class AlertService
     private static string Pill(string text, string color) =>
         $$"""<span style="display:inline-block;padding:2px 10px;border-radius:999px;background:{{color}};color:#ffffff;font-size:12px;font-weight:700;">{{H(text)}}</span>""";
 
-    /// <summary>Anahtar/deger satirlari. Degerler cagiran tarafta encode edilmis HTML olmalidir.</summary>
+
     private static string InfoTable(params (string Key, string ValueHtml)[] rows)
     {
         var sb = new StringBuilder();
@@ -396,7 +383,7 @@ public sealed class AlertService
         if (bars.Count == 0)
             return "";
 
-        // Diger bolumlerle ayni cerceveli kutu gorunumu icin ic tabloyu dolguyla sariyoruz.
+
         return SectionTitle("Kaynak kullanımı") +
                """<table role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e3e7ec;border-radius:8px;margin:0 auto;"><tr><td style="padding:10px 18px;">""" +
                """<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">""" +
@@ -409,7 +396,7 @@ public sealed class AlertService
         var p = (int)Math.Round(Math.Clamp(percent, 0, 100));
         var color = p >= 95 ? ColorDown : p >= 85 ? ColorWarn : ColorUp;
 
-        // Outlook yuzde genislikli bos hucreleri cokertebildigi icin iki hucreyi de dolu tutuyoruz.
+
         var fill = Math.Clamp(p, 1, 99);
         var bar = p >= 100
             ? $$"""<td bgcolor="{{color}}" style="background:{{color}};height:8px;font-size:0;line-height:0;">&nbsp;</td>"""
@@ -432,9 +419,7 @@ public sealed class AlertService
             """;
     }
 
-    // =====================================================
-    //  Yardimcilar
-    // =====================================================
+
 
     private static string H(string? value) => WebUtility.HtmlEncode(value ?? "");
 
@@ -477,10 +462,7 @@ public sealed class AlertService
         return value >= 100 || unit == 0 ? $"{value:F0} {units[unit]}" : $"{value:F1} {units[unit]}";
     }
 
-    /// <summary>
-    /// E-postadaki "Paneli aç" adresi. appsettings.json'da "PanelUrl" verilirse o kullanilir;
-    /// yoksa Kestrel adresindeki 0.0.0.0 bu makinenin adiyla degistirilir.
-    /// </summary>
+
     private string PanelUrl()
     {
         var configured = _configuration["PanelUrl"];
@@ -493,9 +475,7 @@ public sealed class AlertService
         return url.Replace("0.0.0.0", machine).Replace("[::]", machine).Replace("*", machine).Replace("+", machine).TrimEnd('/');
     }
 
-    // =====================================================
-    //  Gonderim
-    // =====================================================
+
 
     private async Task<List<string>> SendAsync(NotificationOptions options, AlertMessage message, CancellationToken ct)
     {
@@ -550,7 +530,7 @@ public sealed class AlertService
             From = new MailAddress(o.From, "Sunucu Durum Paneli"),
             Subject = message.Subject,
             SubjectEncoding = Encoding.UTF8,
-            // Duz metin ana govde; HTML alternatif olarak eklenir, destekleyen istemci onu gosterir.
+
             Body = message.Text,
             BodyEncoding = Encoding.UTF8
         };
@@ -571,7 +551,7 @@ public sealed class AlertService
         var client = _httpClientFactory.CreateClient(HttpClientNames.Default);
         client.Timeout = TimeSpan.FromSeconds(15);
 
-        // "text" alani hem Slack hem Teams gelen webhook'lari tarafindan anlasilir.
+
         var payload = new { text = $"**{message.Subject}**\n\n{message.Text.Replace("\n", "  \n")}" };
 
         using var response = await client.PostAsJsonAsync(o.Url, payload, ct);

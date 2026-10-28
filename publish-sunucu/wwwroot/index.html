@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sunucu Durum Paneli</title>
 
-  <!-- Ana ekrana eklenince uygulama gibi calisma (iPhone + Android) -->
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -68,7 +67,6 @@
     </button>
   </nav>
 
-  <!-- Yalnızca yazdırma/PDF çıktısında görünür -->
   <div id="printHeader" class="print-header" aria-hidden="true"></div>
 
   <section class="summary" id="summary">
@@ -93,7 +91,6 @@
     <span id="toast" class="toast" hidden></span>
   </footer>
 
-  <!-- ============ iPhone: ana ekrana ekleme ipucu ============ -->
   <div id="installHint" class="install-hint" hidden>
     <img src="/apple-touch-icon.png" alt="" class="install-hint-icon">
     <div class="install-hint-text">
@@ -107,7 +104,6 @@
     <button type="button" class="ghost icon" id="installHintClose" title="Kapat">✕</button>
   </div>
 
-  <!-- ============ Sunucu detayı + canlı grafikler ============ -->
   <div id="backdrop" class="backdrop" hidden></div>
 
   <aside id="drawer" class="drawer" hidden aria-label="Sunucu detayı">
@@ -125,7 +121,7 @@
     <div class="drawer-body" id="drawerBody"></div>
   </aside>
 
-  <!-- ============ Sunucu ekleme / düzenleme formu ============ -->
+
   <div id="formModal" class="modal" hidden>
     <form id="serverForm" class="modal-card" autocomplete="off">
       <div class="modal-head">
@@ -254,7 +250,7 @@
     </form>
   </div>
 
-  <!-- ============ Ayarlar: genel, bildirim, güvenlik ============ -->
+
   <div id="settingsModal" class="modal" hidden>
     <div class="modal-card">
       <div class="modal-head">
@@ -272,7 +268,7 @@
 
       <div class="modal-body">
 
-        <!-- Genel -->
+
         <form class="tab-panel" data-panel="general" id="generalForm">
           <fieldset>
             <legend>İzleme</legend>
@@ -290,7 +286,6 @@
           <div class="panel-actions"><button type="submit">Kaydet</button></div>
         </form>
 
-        <!-- Bildirim -->
         <form class="tab-panel" data-panel="notify" id="notifyForm" hidden>
           <fieldset>
             <legend>Genel</legend>
@@ -361,7 +356,7 @@
           </div>
         </form>
 
-        <!-- Güvenlik -->
+
         <form class="tab-panel" data-panel="security" id="securityForm" hidden>
           <fieldset>
             <legend>Panel girişi</legend>
@@ -380,7 +375,6 @@
           <div class="panel-actions"><button type="submit">Kaydet</button></div>
         </form>
 
-        <!-- DNS / Ağ -->
         <div class="tab-panel" data-panel="dns" hidden>
           <fieldset>
             <legend>Alan adı erişim raporu</legend>
@@ -430,7 +424,7 @@
           </fieldset>
         </div>
 
-        <!-- Uptime raporu -->
+
         <div class="tab-panel" data-panel="report" hidden>
           <div class="field-row report-controls">
             <label class="field" style="max-width:180px">

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ServerMonitor.Services;
 
-/// <summary>Panel giris parolasi icin PBKDF2 (SHA-256) ozeti. Parola hicbir yerde duz saklanmaz.</summary>
+
 public static class PasswordHasher
 {
     private const int Iterations = 210_000;
@@ -29,7 +29,7 @@ public static class PasswordHasher
                 Encoding.UTF8.GetBytes(password), Convert.FromBase64String(salt),
                 Iterations, HashAlgorithmName.SHA256, expected.Length);
 
-            // Zamanlama saldirilarina karsi sabit sureli karsilastirma.
+ 
             return CryptographicOperations.FixedTimeEquals(expected, actual);
         }
         catch (FormatException)

@@ -3,11 +3,6 @@ chcp 65001 >nul
 setlocal
 title ServerMonitor sunucu kurulumu
 
-rem ================================================================
-rem  Bu dosyayı SUNUCUDA (192.168.2.206) çalıştırın.
-rem  Zip'ten çıkan klasörün içindeyken, YÖNETİCİ olarak açın.
-rem  .NET gerektirmez (paket kendinden çalışır).
-rem ================================================================
 
 cd /d "%~dp0"
 
@@ -28,7 +23,6 @@ if not exist "%~dp0ServerMonitor.exe" (
     exit /b 1
 )
 
-rem --- Varsa mevcut servisi durdur ---
 sc.exe query %SERVICE_NAME% >nul 2>&1
 if not errorlevel 1 (
     echo Mevcut servis durduruluyor...
@@ -36,15 +30,14 @@ if not errorlevel 1 (
     timeout /t 5 /nobreak >nul
 )
 
-rem --- Dosyalari C:\ServerMonitor'a kopyala (veri dosyalarini KORU) ---
 echo Dosyalar %INSTALL_DIR% klasorune kopyalaniyor...
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 
 if exist "%INSTALL_DIR%\servers.json" (
-    rem GUNCELLEME: mevcut sunucu listesi, gecmis ve anahtarlar korunur (uzerine yazilmaz)
+
     robocopy "%~dp0." "%INSTALL_DIR%" /E /XD keys /XF sunucuda-kur.bat servers.json history.db history.db-shm history.db-wal /NFL /NDL /NJH /NJS /NP >nul
 ) else (
-    rem ILK KURULUM: servers.json (cihaz listesi) de kopyalanir
+
     robocopy "%~dp0." "%INSTALL_DIR%" /E /XD keys /XF sunucuda-kur.bat history.db history.db-shm history.db-wal /NFL /NDL /NJH /NJS /NP >nul
 )
 if %ERRORLEVEL% GEQ 8 (
@@ -53,7 +46,7 @@ if %ERRORLEVEL% GEQ 8 (
     exit /b 1
 )
 
-rem --- Servisi olustur veya guncelle ---
+
 sc.exe query %SERVICE_NAME% >nul 2>&1
 if errorlevel 1 (
     echo Servis olusturuluyor...
@@ -64,7 +57,7 @@ if errorlevel 1 (
     echo Servis zaten var, dosyalar guncellendi.
 )
 
-rem --- Guvenlik duvari (yerel alt agdan 5080) ---
+
 netsh advfirewall firewall delete rule name="ServerMonitor Panel" >nul 2>&1
 netsh advfirewall firewall add rule name="ServerMonitor Panel" dir=in action=allow protocol=TCP localport=5080 remoteip=localsubnet profile=any >nul
 

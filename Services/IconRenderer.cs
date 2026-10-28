@@ -5,14 +5,10 @@ using System.Text;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// Ana ekran / PWA simgesini (koyu zemin uzerinde yesil nabiz cizgisi) calisma aninda PNG olarak cizer.
-/// iOS apple-touch-icon icin SVG kabul etmedigi ve harici gorsel dosyasi tasimak istemedigimiz icin.
-/// Her boyut bir kez cizilip bellekte tutulur.
-/// </summary>
+
 public static class IconRenderer
 {
-    /// <summary>Istenebilecek boyutlar: 180 iPhone, 192/512 manifest.</summary>
+   
     public static readonly int[] AllowedSizes = { 180, 192, 512 };
 
     private static readonly ConcurrentDictionary<int, byte[]> Cache = new();
@@ -24,7 +20,7 @@ public static class IconRenderer
         double s = size;
         var rgb = new byte[size * size * 3];
 
-        // Nabiz cizgisi (0-1 araliginda). Android "maskable" kirpmasina karsi merkezdeki %80'lik alanda kaliyor.
+     
         (double X, double Y)[] shape =
         {
             (0.16, 0.56), (0.35, 0.56), (0.43, 0.36), (0.53, 0.74),
@@ -39,7 +35,7 @@ public static class IconRenderer
         var dotRadius = 0.058 * s;
         var glowRadius = 0.13 * s;
 
-        // Renkler
+
         (double R, double G, double B) top = (0x24, 0x2f, 0x3c);
         (double R, double G, double B) bottom = (0x0d, 0x12, 0x17);
         (double R, double G, double B) line = (0x3f, 0xb9, 0x50);
@@ -56,12 +52,12 @@ public static class IconRenderer
                 var py = y + 0.5;
                 var color = bg;
 
-                // Noktanin cevresindeki yumusak parilti
+    
                 var dotDistance = Distance(px, py, dotX, dotY);
                 var glow = Math.Clamp(1 - (dotDistance - dotRadius) / (glowRadius - dotRadius), 0, 1);
                 color = Blend(color, line, glow * glow * 0.35);
 
-                // Cizgi: en yakin parcaya olan mesafeden kenar yumusatmali kapsama
+        
                 var lineDistance = double.MaxValue;
                 for (var i = 0; i < points.Length - 1; i++)
                 {
@@ -70,7 +66,7 @@ public static class IconRenderer
                 }
                 color = Blend(color, line, Math.Clamp(halfWidth + 0.5 - lineDistance, 0, 1));
 
-                // Uc nokta
+              
                 color = Blend(color, dot, Math.Clamp(dotRadius + 0.5 - dotDistance, 0, 1));
 
                 var offset = (y * size + x) * 3;
@@ -83,7 +79,7 @@ public static class IconRenderer
         return EncodePng(size, size, rgb);
     }
 
-    // --- Cizim yardimcilari ---
+  
 
     private static double Lerp(double a, double b, double t) => a + (b - a) * t;
 
@@ -108,7 +104,7 @@ public static class IconRenderer
         return Distance(px, py, ax + t * vx, ay + t * vy);
     }
 
-    // --- En kucuk PNG kodlayici (RGB, 8 bit, filtresiz satirlar + zlib) ---
+  
 
     private static byte[] EncodePng(int width, int height, byte[] rgb)
     {
@@ -117,7 +113,7 @@ public static class IconRenderer
         {
             for (var y = 0; y < height; y++)
             {
-                zlib.WriteByte(0); // satir filtresi: yok
+                zlib.WriteByte(0); 
                 zlib.Write(rgb, y * width * 3, width * 3);
             }
         }
@@ -125,11 +121,11 @@ public static class IconRenderer
         var header = new byte[13];
         BinaryPrimitives.WriteUInt32BigEndian(header.AsSpan(0, 4), (uint)width);
         BinaryPrimitives.WriteUInt32BigEndian(header.AsSpan(4, 4), (uint)height);
-        header[8] = 8;  // bit derinligi
-        header[9] = 2;  // renk tipi: RGB
-        header[10] = 0; // sikistirma
-        header[11] = 0; // filtre
-        header[12] = 0; // interlace yok
+        header[8] = 8;  
+        header[9] = 2;  
+        header[10] = 0; 
+        header[11] = 0; 
+        header[12] = 0; 
 
         using var png = new MemoryStream();
         png.Write(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });

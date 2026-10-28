@@ -5,13 +5,10 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>
-/// Cihaz durumlarindan gercek bir .docx (Word) dosyasi uretir. Harici paket kullanmaz;
-/// docx aslinda birkac XML iceren bir ZIP oldugu icin elle olusturuluyor (cevrimdisi calisir).
-/// </summary>
+
 public static class ReportService
 {
-    // Durum renkleri (Word shading icin, # olmadan)
+
     private const string Green = "2EA043";
     private const string Amber = "D29922";
     private const string Red = "E5484D";
@@ -23,14 +20,13 @@ public static class ReportService
     {
         var body = new StringBuilder();
 
-        // Baslik
+
         body.Append(Para("Sunucu Durum Raporu", bold: true, sizeHalfPt: 40, color: "1B222B"));
         var subtitle = $"{DateTime.Now:dd.MM.yyyy HH:mm}" +
                        (string.IsNullOrEmpty(scopeLabel) ? "" : $"  ·  {scopeLabel}") +
                        $"  ·  {Environment.MachineName}";
         body.Append(Para(subtitle, sizeHalfPt: 18, color: "5F6B7A"));
 
-        // Ozet
         var summary = new
         {
             up = servers.Count(s => s.State == HealthState.Up),
@@ -43,7 +39,6 @@ public static class ReportService
             sizeHalfPt: 20, color: "1B222B"));
         body.Append(Spacer());
 
-        // Gruplara (bölümlere) göre tablolar
         var groups = servers
             .GroupBy(s => string.IsNullOrWhiteSpace(s.Group) ? "Genel" : s.Group)
             .OrderBy(g => g.Key, StringComparer.CurrentCultureIgnoreCase);
@@ -71,9 +66,6 @@ public static class ReportService
         return Package(document);
     }
 
-    // =====================================================
-    //  Tablo
-    // =====================================================
 
     private static string BuildTable(IEnumerable<ServerStatus> rows)
     {
@@ -84,7 +76,7 @@ public static class ReportService
             sb.Append($"<w:{edge} w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"DDE3EA\"/>");
         sb.Append("</w:tblBorders><w:tblLook w:firstRow=\"1\"/></w:tblPr>");
 
-        // Baslik satiri
+
         sb.Append("<w:tr>");
         sb.Append(HeaderCell("Cihaz", 2800));
         sb.Append(HeaderCell("Adres", 2600));
@@ -131,9 +123,7 @@ public static class ReportService
                "</w:tc>";
     }
 
-    // =====================================================
-    //  Paragraf + paketleme
-    // =====================================================
+ 
 
     private static string Para(string text, bool bold = false, int sizeHalfPt = 22, string color = "1B222B", bool mono = false)
     {
@@ -183,9 +173,7 @@ public static class ReportService
         writer.Write(content);
     }
 
-    // =====================================================
-    //  Yardimcilar
-    // =====================================================
+
 
     private static string XmlEscape(string? text) => WebUtility.HtmlEncode(text ?? "");
 

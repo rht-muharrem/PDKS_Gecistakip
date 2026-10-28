@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal
 title Sunucu Durum Paneli
 
-rem Bu dosyanin bulundugu klasore gec (cift tiklayinca da dogru calissin diye).
+
 cd /d "%~dp0"
 
 set "PANEL_URL=http://localhost:5080"
@@ -13,7 +13,7 @@ echo   Sunucu Durum Paneli
 echo ============================================
 echo.
 
-rem --- .NET SDK var mi? ---
+
 where dotnet >nul 2>&1
 if errorlevel 1 (
     echo [HATA] .NET SDK bulunamadi.
@@ -33,7 +33,7 @@ echo Klasor      : %CD%
 echo Panel adresi: %PANEL_URL%
 echo.
 
-rem --- Onceden calisan bir ornek varsa kapat (exe kilidi derlemeyi engellemesin) ---
+
 tasklist /fi "imagename eq ServerMonitor.exe" 2>nul | find /i "ServerMonitor.exe" >nul
 if not errorlevel 1 (
     echo Onceden calisan ornek kapatiliyor...
@@ -41,7 +41,6 @@ if not errorlevel 1 (
     timeout /t 2 /nobreak >nul
 )
 
-rem --- Paketleri indir ---
 echo [1/3] Paketler kontrol ediliyor...
 dotnet restore >nul
 if errorlevel 1 (
@@ -53,7 +52,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-rem --- Derle ---
+
 echo [2/3] Proje derleniyor...
 dotnet build -c Release --nologo -v q
 if errorlevel 1 (
@@ -64,7 +63,6 @@ if errorlevel 1 (
     exit /b 1
 )
 
-rem --- Tarayiciyi ac ve uygulamayi baslat ---
 echo [3/3] Uygulama baslatiliyor...
 echo.
 echo Tarayici birazdan acilacak. Durdurmak icin bu pencerede Ctrl+C yapin.

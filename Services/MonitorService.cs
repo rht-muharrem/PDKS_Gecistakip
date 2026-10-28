@@ -2,7 +2,7 @@ using ServerMonitor.Models;
 
 namespace ServerMonitor.Services;
 
-/// <summary>Tum sunuculari paralel kontrol eder ve sonuclari StatusStore'a yazar.</summary>
+
 public sealed class MonitorService
 {
     private readonly ServerRepository _repository;
@@ -12,7 +12,7 @@ public sealed class MonitorService
     private readonly HistoryStore _history;
     private readonly ILogger<MonitorService> _logger;
 
-    // Ayni anda birden fazla tur calismasini engeller (arka plan + manuel tetikleme).
+
     private readonly SemaphoreSlim _runLock = new(1, 1);
 
     public MonitorService(
@@ -49,9 +49,7 @@ public sealed class MonitorService
                 _store.Set(result);
             }
 
-            // Tur SIRASINDA silinen/pasiflenen bir sunucu, sonuclari yazarken belleğe geri
-            // eklenmis olabilir. Guncel listeyle tekrar temizleyip bunlari hemen dusuruyoruz
-            // (yoksa bir sonraki tura, ~60 sn'ye kadar ekranda kalirlardi).
+
             var live = _repository.GetServers().Where(s => s.Enabled).Select(s => s.Id!)
                 .Where(id => !string.IsNullOrEmpty(id));
             _store.RetainOnly(live);
@@ -118,9 +116,6 @@ public sealed class MonitorService
             });
         }
 
-        // ICMP cogu ortamda kapalidir; ping'in dusmesi sunucunun erisilemez oldugunu GOSTERMEZ.
-        // Bu yuzden erisilebilirlik karari yalnizca port/HTTP kontrollerine bakar. Hic port/HTTP
-        // kontrolu tanimlanmamissa WMI her halukarda denenir.
         var probes = checks.Where(c => c.Type is "port" or "http").ToList();
         var reachable = probes.Count == 0 || probes.Any(c => c.State != HealthState.Down);
 
@@ -136,7 +131,7 @@ public sealed class MonitorService
 
         var state = Aggregate(checks);
 
-        // Cihaz agda mi? Ag kontrollerinden biri gecmisse evet; hic ag kontrolu yoksa WMI'ye ulasilabildiyse evet.
+
         var networkChecks = checks.Where(c => c.Type is "ping" or "port" or "http").ToList();
         var online = networkChecks.Count > 0
             ? networkChecks.Any(c => c.State != HealthState.Down)
@@ -155,7 +150,7 @@ public sealed class MonitorService
             DiskPercent = metrics is { Drives.Count: > 0 } ? metrics.Drives.Max(d => d.UsedPercent) : null
         };
 
-        // Uygulama yeni basladiysa bellekte gecmis yoktur; grafikler bos kalmasin diye diskten yukle.
+ 
         var priorHistory = previous?.History ?? await _history.LoadRecentAsync(id, settings.HistorySize, ct);
 
         await _history.AppendAsync(id, point, ct);
